@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import { createClient } from '@/lib/supabase-browser';
 
 export default function LoginForm({ error: initialError }: { error: string }) {
   const [showPassword, setShowPassword] = useState(false);
@@ -20,23 +21,20 @@ export default function LoginForm({ error: initialError }: { error: string }) {
     const password = String(form.get('password') ?? '');
 
     try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'same-origin',
-        body: JSON.stringify({ email, password }),
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
       });
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        setError(data.error || 'Não foi possível realizar o login.');
+      if (authError) {
+        setError(authError.message);
         return;
       }
 
       window.location.assign('/dashboard');
     } catch {
-      setError('Não foi possível conectar ao servidor. Tente novamente.');
+      setError('Não foi possível realizar o login. Tente novamente.');
     } finally {
       setBusy(false);
     }
