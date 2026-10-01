@@ -2,6 +2,8 @@ import { getCurrentProfile } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import LoginForm from './LoginForm';
 
+export const dynamic = 'force-dynamic';
+
 type LoginPageProps = {
   searchParams?: Promise<{ error?: string; reset?: string }>;
 };
@@ -12,9 +14,10 @@ export default async function Login({ searchParams }: LoginPageProps) {
 
   const params = await searchParams;
   const error = params?.error ? decodeURIComponent(params.error) : '';
-  const notice = params?.reset === 'success'
-    ? 'Senha redefinida com sucesso. Entre usando sua nova senha.'
-    : '';
+  const notice =
+    params?.reset === 'success'
+      ? 'Senha redefinida com sucesso. Entre usando sua nova senha.'
+      : '';
 
   return <LoginForm error={error} notice={notice} />;
 }
