@@ -1,17 +1,47 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
-import { login } from './actions';
+import { createClient } from '@/lib/supabase-browser';
 
 export default function LoginForm({ error: initialError }: { error: string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
+  const router = useRouter();
 
   return (
     <main className="login">
-      <form className="loginCard" action={login}>
+      <form
+        className="loginCard"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          if (busy) return;
+
+          setBusy(true);
+          setError('');
+
+          const form = new FormData(event.currentTarget);
+          const email = String(form.get('email') ?? '').trim();
+          const password = String(form.get('password') ?? '');
+
+          const supabase = createClient();
+          const { error: authError } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+          });
+
+          if (authError) {
+            setError(authError.message);
+            setBusy(false);
+            return;
+          }
+
+          router.replace('/dashboard');
+          router.refresh();
+        }}
+      >
         <div className="loginHeader">
           <span className="loginMark" aria-hidden="true">AC</span>
           <div>
