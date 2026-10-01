@@ -1,3 +1,57 @@
 'use client';
-import Link from 'next/link';import {usePathname,useRouter} from 'next/navigation';import {CalendarDays,Building2,LayoutDashboard,LogOut,UsersRound} from 'lucide-react';import {createClient} from '@/lib/supabase-browser';
-export default function Shell({children,profile}:{children:React.ReactNode,profile:any}){const path=usePathname();const router=useRouter();const items=[['/dashboard','Visão geral',LayoutDashboard],['/agendas','Agendas',CalendarDays],['/clinicas','Clínicas',Building2]] as const;return <div className="shell"><header className="topbar"><div className="brand"><span className="brandIcon"><CalendarDays size={18}/></span><div><b>Agenda Clínica</b><small>Gestão de agendas</small></div></div><div className="user"><span>{profile.full_name||'Usuário'}<small>{profile.role==='clinic'?'Clínica parceira':profile.role==='operator'?'Operador':'Administrador'}</small></span><button className="iconBtn" onClick={async()=>{await createClient().auth.signOut();router.replace('/login')}}><LogOut size={17}/></button></div></header><div className="layout"><aside>{items.map(([href,label,Icon])=><Link className={path.startsWith(href)?'nav active':'nav'} href={href} key={href}><Icon size={18}/>{label}</Link>)}{(profile.role==='admin'||profile.role==='operator')&&<Link className={path.startsWith('/usuarios')?'nav active':'nav'} href="/usuarios"><UsersRound size={18}/>Usuários</Link>}</aside><main>{children}</main></div></div>}
+
+import Link from 'next/link';
+import { usePathname, useRouter } from 'next/navigation';
+import { CalendarDays, Building2, LayoutDashboard, LogOut, UsersRound } from 'lucide-react';
+import { createClient } from '@/lib/supabase-browser';
+
+export default function Shell({ children, profile }: { children: React.ReactNode; profile: any }) {
+  const path = usePathname();
+  const router = useRouter();
+  const items = [
+    ['/dashboard', 'Visão geral', LayoutDashboard],
+    ['/agendas', 'Agendas', CalendarDays],
+    ['/clinicas', 'Clínicas', Building2],
+  ] as const;
+
+  return (
+    <div className="shell">
+      <header className="topbar">
+        <Link href="/dashboard" className="brand">
+          <span className="brandIcon"><CalendarDays size={18} /></span>
+          <div><b>Agenda Clínica</b><small>Gestão de agendas</small></div>
+        </Link>
+        <div className="user">
+          <div className="userIdentity">
+            <span className="userAvatar">{(profile.full_name || 'U').slice(0, 1).toUpperCase()}</span>
+            <span><b>{profile.full_name || 'Usuário'}</b><small>{profile.role === 'clinic' ? 'Clínica parceira' : profile.role === 'operator' ? 'Operador' : 'Administrador'}</small></span>
+          </div>
+          <button className="iconBtn" onClick={async () => { await createClient().auth.signOut(); router.replace('/login'); }} aria-label="Sair" title="Sair">
+            <LogOut size={17} />
+          </button>
+        </div>
+      </header>
+
+      <div className="layout">
+        <aside>
+          <div className="navLabel">Navegação</div>
+          {items.map(([href, label, Icon]) => (
+            <Link className={path.startsWith(href) ? 'nav active' : 'nav'} href={href} key={href}>
+              <Icon size={18} />{label}
+            </Link>
+          ))}
+          {(profile.role === 'admin' || profile.role === 'operator') && (
+            <>
+              <div className="navLabel navLabelSpaced">Administração</div>
+              <Link className={path.startsWith('/usuarios') ? 'nav active' : 'nav'} href="/usuarios">
+                <UsersRound size={18} />Usuários
+              </Link>
+            </>
+          )}
+          <div className="sideFooter">Agenda Clínica<br /><span>Operação segura</span></div>
+        </aside>
+        <main>{children}</main>
+      </div>
+    </div>
+  );
+}
