@@ -8,6 +8,10 @@ import { createClient } from '@/lib/supabase-browser';
 
 function dateValue(d: Date) { return d.toISOString().slice(0,10); }
 function addDays(value:string, amount:number) { const d=new Date(value+'T12:00:00'); d.setDate(d.getDate()+amount); return dateValue(d); }
+function slotTime(slotNumber:number) {
+  const totalMinutes=14*60+(slotNumber-1)*5;
+  return `${String(Math.floor(totalMinutes/60)).padStart(2,'0')}:${String(totalMinutes%60).padStart(2,'0')}`;
+}
 
 export default function AvailabilityMap() {
   const [profile,setProfile]=useState<any>(null);
@@ -28,7 +32,7 @@ export default function AvailabilityMap() {
     const {data:a}=await q; const agendaRows=a||[]; setAgendas(agendaRows);
     const ids=agendaRows.map(x=>x.id);
     if(!ids.length){setAppointments([]);setLoading(false);return;}
-    const {data:ap}=await s.from('appointments').select('id,agenda_id,status').in('agenda_id',ids).neq('status','cancelled');
+    const {data:ap}=await s.from('appointments').select('id,agenda_id,patient_name,slot_number,slot_time,status').in('agenda_id',ids).neq('status','cancelled');
     setAppointments(ap||[]); setLoading(false);
   }
   useEffect(()=>{load()},[startDate,days]);
@@ -63,12 +67,22 @@ export default function AvailabilityMap() {
               const used=countByAgenda[a.id]||0;
               const free=Math.max(0,a.capacity-used);
               const percent=Math.min(100,Math.round(used/a.capacity*100));
-              return <Link href={'/agendas/'+a.id} className="availabilityCard" key={a.id}>
-                <div className="availabilityCardTop"><span className={'availabilityStatus availability-'+a.status}>{a.status==='open'?'Aberta':a.status==='closed'?'Fechada':'Cancelada'}</span><strong>{free} vagas</strong></div>
+              <div className="availabilityCard" key={a.id}>
+                <div className="availabilityCardTop"><span className={'availabilityStatus availability-'+a.status}>{a.status==='open'?'Aberta':a.status==='closed'?'Fechada':'Cancelada'}</span><strong>{used}/{a.capacity} ocupados</strong></div>
                 <h3>{a.clinics?.name||'Clínica'}</h3>
-                <div className="availabilityNumbers"><span>{used} ocupadas</span><span>{a.capacity} capacidade</span></div>
+                <div className="availabilityNumbers"><span>{free} vagas</span><span>{a.capacity} slots</span></div>
                 <div className="capacityTrack"><span style={{width:percent+'%'}}/></div>
-              </Link>
+                <div className="availabilitySlots">
+                  {Array.from({length:a.capacity},(_,index)=>{
+                    const slotNumber=index+1;
+                    const item=appointments.find(x=>x.agenda_id===a.id && Number(x.slot_number)===slotNumber);
+                    return <Link href={'/agendas/'+a.id+'/slot/'+slotNumber} className={'availabilitySlot '+(item?'occupied':'available')} key={slotNumber}>
+                      <span className="availabilitySlotTime">{slotTime(slotNumber)}</span>
+                      <span className="availabilitySlotPatient">{item?.patient_name||'Disponível'}</span>
+                    </Link>;
+                  })}
+                </div>
+              </div>
             })}
           </div>
         </section>
