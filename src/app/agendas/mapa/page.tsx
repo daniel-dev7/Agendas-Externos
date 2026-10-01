@@ -44,15 +44,14 @@ export default function AvailabilityMap() {
   if(loading||!profile)return <div className="loading">Carregando mapa de disponibilidade...</div>;
 
   return <Shell profile={profile}>
-    <div className="dayViewHeader">
-      <div><span className="panelKicker">Planejamento</span><div className="dayTitleRow"><div className="dayIcon"><MapPinned size={19}/></div><div><h1>Mapa de disponibilidade</h1><p className="muted">Visualize agendas futuras, ocupação e vagas antes de escolher onde agendar.</p></div></div></div>
-      <div className="dayNav"><button className="dayNavBtn" onClick={()=>setStartDate(addDays(startDate,-days))}><ChevronLeft size={18}/></button><button className="dayNavBtn" onClick={()=>setStartDate(addDays(startDate,days))}><ChevronRight size={18}/></button></div>
-    </div>
-
-    <div className="availabilityFilters card">
-      <label><span>Início</span><input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)}/></label>
-      <label><span>Período</span><select value={days} onChange={e=>setDays(Number(e.target.value))}><option value="7">7 dias</option><option value="14">14 dias</option><option value="30">30 dias</option></select></label>
-      <Link href={'/agendas/dia/'+startDate} className="btn"><CalendarRange size={16}/> Ver primeiro dia</Link>
+    <div className="compactAgendaToolbar">
+      <div className="compactAgendaTitle"><MapPinned size={17}/><div><h1>Agendas</h1><span>Disponibilidade por horário</span></div></div>
+      <div className="compactAgendaControls">
+        <button className="dayNavBtn" onClick={()=>setStartDate(addDays(startDate,-days))}><ChevronLeft size={17}/></button>
+        <input type="date" value={startDate} onChange={e=>setStartDate(e.target.value)} aria-label="Data inicial"/>
+        <select value={days} onChange={e=>setDays(Number(e.target.value))} aria-label="Período"><option value="1">Hoje</option><option value="7">7 dias</option><option value="14">14 dias</option><option value="30">30 dias</option></select>
+        <button className="dayNavBtn" onClick={()=>setStartDate(addDays(startDate,days))}><ChevronRight size={17}/></button>
+      </div>
     </div>
 
     <div className="availabilityBoard">
@@ -60,14 +59,14 @@ export default function AvailabilityMap() {
         const rows=byDate[date]||[];
         const dayLabel=new Date(date+'T12:00:00').toLocaleDateString('pt-BR',{weekday:'long',day:'2-digit',month:'2-digit'});
         return <section className="availabilityDay" key={date}>
-          <header><div><strong>{dayLabel}</strong><small>{rows.length} {rows.length===1?'agenda':'agendas'}</small></div><Link href={'/agendas/dia/'+date}>Ver dia</Link></header>
+          <header><div><strong>{dayLabel}</strong><small>{rows.length} {rows.length===1?'agenda':'agendas'}</small></div></header>
           <div className="availabilityCards">
             {!rows.length&&<div className="availabilityEmpty">Sem agenda aberta</div>}
             {rows.map(a=>{
               const used=countByAgenda[a.id]||0;
               const free=Math.max(0,a.capacity-used);
               const percent=Math.min(100,Math.round(used/a.capacity*100));
-              <div className="availabilityCard" key={a.id}>
+              return <div className="availabilityCard" key={a.id}>
                 <div className="availabilityCardTop"><span className={'availabilityStatus availability-'+a.status}>{a.status==='open'?'Aberta':a.status==='closed'?'Fechada':'Cancelada'}</span><strong>{used}/{a.capacity} ocupados</strong></div>
                 <h3>{a.clinics?.name||'Clínica'}</h3>
                 <div className="availabilityNumbers"><span>{free} vagas</span><span>{a.capacity} slots</span></div>
