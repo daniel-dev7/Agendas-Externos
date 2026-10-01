@@ -2,9 +2,16 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
+import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
 
-export default function LoginForm({ error: initialError }: { error: string }) {
+export default function LoginForm({
+  error: initialError,
+  notice,
+}: {
+  error: string;
+  notice: string;
+}) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
@@ -47,6 +54,8 @@ export default function LoginForm({ error: initialError }: { error: string }) {
           </div>
         </div>
 
+        {notice && <div className="notice" role="status">{notice}</div>}
+
         <label htmlFor="email">
           E-mail
           <input id="email" name="email" type="email" required autoComplete="email" placeholder="seu@email.com" />
@@ -80,6 +89,10 @@ export default function LoginForm({ error: initialError }: { error: string }) {
         <button type="submit" className="btn loginBtn" disabled={busy}>
           {busy ? 'Entrando...' : 'Entrar'}
         </button>
+
+        <Link className="forgotLink" href="/forgot-password">
+          Esqueci minha senha
+        </Link>
       </form>
     </main>
   );
