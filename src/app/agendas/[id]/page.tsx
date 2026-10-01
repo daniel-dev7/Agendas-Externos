@@ -48,7 +48,7 @@ export default function Detail() {
     const{data:p}=await s.from('profiles').select('*,clinics(id,name)').eq('id',user.id).single();setProfile(p);
     const[{data:a},{data:r},{data:pt}]=await Promise.all([
       s.from('agendas').select('id,scheduled_date,status,capacity,clinics(name)').eq('id',id).single(),
-      s.from('appointments').select('id,patient_name,patient_id,slot_time,status').eq('agenda_id',id).order('slot_time'),
+      s.from('appointments').select('id,patient_name,patient_id,slot_number,slot_time,status').eq('agenda_id',id).order('slot_time'),
       s.from('patients').select('id,full_name,cpf,phone').order('full_name')
     ]);
     setAgenda(a);setRows(r||[]);setPatients(pt||[]);
@@ -95,7 +95,10 @@ export default function Detail() {
     if(!patientId)return setMsg('Selecione um paciente cadastrado.');
     const patient=patients.find(p=>p.id===patientId);
     if(!patient)return setMsg('Paciente não encontrado.');
-    const{error}=await createClient().from('appointments').insert({agenda_id:id,patient_id:patient.id,patient_name:patient.full_name,slot_time:time,status:'reserved'});
+    const usedSlots = new Set(rows.filter(r=>r.status!=='cancelled' && r.slot_number).map(r=>Number(r.slot_number)));
+    const availableSlot = Array.from({length:Number(agenda.capacity||0)},(_,index)=>index+1).find(slot=>!usedSlots.has(slot));
+    if(!availableSlot)return setMsg('Esta agenda está lotada.');
+    const{error}=await createClient().from('appointments').insert({agenda_id:id,patient_id:patient.id,patient_name:patient.full_name,slot_number:availableSlot,slot_time:time,status:'reserved'});
     if(error)setMsg(error.message);else{setPatientId('');setPatientQuery('');setPatientOpen(false);load();}
   }
 
