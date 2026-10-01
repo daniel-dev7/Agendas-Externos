@@ -28,6 +28,10 @@ export default function SlotPage() {
   const { id, slot } = useParams();
   const agendaId = String(id ?? '');
   const slotNumber = Number(slot);
+  const slotTime = (() => {
+    const totalMinutes = (14 * 60) + ((slotNumber - 1) * 5);
+    return `${String(Math.floor(totalMinutes / 60)).padStart(2, '0')}:${String(totalMinutes % 60).padStart(2, '0')}`;
+  })();
   const [profile, setProfile] = useState<any>(null);
   const [agenda, setAgenda] = useState<any>(null);
   const [appointment, setAppointment] = useState<any>(null);
@@ -35,7 +39,6 @@ export default function SlotPage() {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
   const [patientId, setPatientId] = useState('');
-  const [time, setTime] = useState('07:00');
   const [msg, setMsg] = useState('');
   const searchRef = useRef<HTMLDivElement>(null);
 
@@ -88,7 +91,7 @@ export default function SlotPage() {
       patient_id: patient.id,
       patient_name: patient.full_name,
       slot_number: slotNumber,
-      slot_time: time,
+      slot_time: slotTime,
       status: 'reserved'
     });
     if (error) setMsg(error.code === '23505' ? 'Este slot acabou de ser ocupado. Atualize a página.' : error.message);
@@ -112,14 +115,14 @@ export default function SlotPage() {
       <Link href={'/agendas/dia/' + agenda.scheduled_date} className="backLink"><ArrowLeft size={15}/> Voltar para o dia</Link>
       <div className="slotHeading">
         <div className="slotIcon"><CalendarDays size={19}/></div>
-        <div><span className="panelKicker">Slot {String(slotNumber).padStart(2, '0')}</span><h1>{agenda.clinics?.name || 'Clínica'}</h1><p className="muted">{formattedDate} · Capacidade {agenda.capacity}</p></div>
+        <div><span className="panelKicker">Slot {String(slotNumber).padStart(2, '0')}</span><h1>{agenda.clinics?.name || 'Clínica'}</h1><p className="muted">{formattedDate} · {slotTime} · Capacidade {agenda.capacity}</p></div>
       </div>
     </div>
 
     {appointment ? <div className="slotOccupied card">
       <div className="slotState success"><CheckCircle2 size={18}/><span>Slot ocupado</span></div>
       <h2>{appointment.patient_name}</h2>
-      <p className="muted">Horário: {appointment.slot_time?.slice(0,5) || '—'} · Status: {appointment.status === 'confirmed' ? 'Confirmado' : 'Reservado'}</p>
+      <p className="muted">Horário: {slotTime} · Status: {appointment.status === 'confirmed' ? 'Confirmado' : 'Reservado'}</p>
       {canBook && <button className="btn slotCancel" onClick={cancel}><XCircle size={15}/> Cancelar agendamento</button>}
       {msg && <div className="error">{msg}</div>}
     </div> : canBook ? <div className="card slotBookingCard">
@@ -141,7 +144,6 @@ export default function SlotPage() {
             </button>) : <div className="patientSearchEmpty">Nenhum paciente encontrado.</div>}
           </div>}
         </div>
-        <input type="time" value={time} onChange={e => setTime(e.target.value)}/>
         <button className="btn" onClick={book}>Agendar neste slot</button>
       </div>
       {msg && <div className="error">{msg}</div>}
