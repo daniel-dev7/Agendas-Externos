@@ -1,0 +1,2 @@
+import {createClient} from './supabase-server';
+export async function getCurrentProfile(){const s=await createClient();const {data}=await s.auth.getClaims();const id=data?.claims?.sub;if(!id)return null;const {data:profile}=await s.from('profiles').select('id,full_name,role,clinic_id,active,clinics(id,name)').eq('id',id).single();if(!profile?.active)return null;return {userId:id,profile}}
