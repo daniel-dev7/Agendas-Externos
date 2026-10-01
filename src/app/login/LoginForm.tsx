@@ -11,7 +11,7 @@ export default function LoginForm({ error: initialError }: { error: string }) {
 
   return (
     <main className="login">
-      <form className="loginCard" action={async (formData) => { setBusy(true); setError(""); await login(formData); }}>
+      <form className="loginCard" action={login}>
         <div className="loginHeader">
           <span className="loginMark" aria-hidden="true">AC</span>
           <div>
