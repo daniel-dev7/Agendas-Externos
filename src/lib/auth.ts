@@ -1,2 +1,20 @@
-import {createClient} from './supabase-server';
-export async function getCurrentProfile(){const s=await createClient();const {data}=await s.auth.getClaims();const id=data?.claims?.sub;if(!id)return null;const {data:profile}=await s.from('profiles').select('id,full_name,role,clinic_id,active,clinics(id,name)').eq('id',id).single();if(!profile?.active)return null;return {userId:id,profile}}
+import { createClient } from './supabase-server';
+
+export async function getCurrentProfile() {
+  const s = await createClient();
+
+  const { data: claimsData } = await s.auth.getClaims();
+  const userId = claimsData?.claims?.sub;
+
+  if (!userId) return null;
+
+  const { data: profile, error } = await s
+    .from('profiles')
+    .select('id,full_name,role,clinic_id,active')
+    .eq('id', userId)
+    .maybeSingle();
+
+  if (error || !profile || !profile.active) return null;
+
+  return { userId, profile };
+}
