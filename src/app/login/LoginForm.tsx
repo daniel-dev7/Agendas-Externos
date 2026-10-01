@@ -1,8 +1,9 @@
 'use client';
 
-import { useState, type FormEvent } from 'react';
+import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
+import { login } from './actions';
 
 export default function LoginForm({
   error: initialError,
@@ -12,51 +13,10 @@ export default function LoginForm({
   notice: string;
 }) {
   const [showPassword, setShowPassword] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(initialError);
-  const [busy, setBusy] = useState(false);
-
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
-
-    const normalizedEmail = email.trim();
-
-    if (!normalizedEmail || !password) {
-      setError('Informe seu e-mail e sua senha.');
-      return;
-    }
-
-    setBusy(true);
-    setError('');
-
-    try {
-      const response = await fetch('/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: normalizedEmail, password }),
-      });
-
-      const result = await response.json();
-
-      if (!response.ok) {
-        setError(result?.error || 'Não foi possível realizar o login.');
-        setBusy(false);
-        return;
-      }
-
-      window.location.replace('/dashboard');
-    } catch (loginError) {
-      console.error('Erro ao entrar:', loginError);
-      setError('Não foi possível realizar o login. Tente novamente.');
-      setBusy(false);
-    }
-  }
 
   return (
     <main className="login">
-      <form className="loginCard" onSubmit={handleSubmit}>
+      <form className="loginCard" action={login}>
         <div className="loginHeader">
           <span className="loginMark" aria-hidden="true">AC</span>
           <div>
@@ -76,8 +36,6 @@ export default function LoginForm({
             required
             autoComplete="email"
             placeholder="seu@email.com"
-            value={email}
-            onChange={(event) => setEmail(event.target.value)}
           />
         </label>
 
@@ -91,8 +49,6 @@ export default function LoginForm({
               required
               autoComplete="current-password"
               placeholder="Digite sua senha"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
             />
             <button
               type="button"
@@ -106,10 +62,10 @@ export default function LoginForm({
           </div>
         </label>
 
-        {error && <div className="error" role="alert">{error}</div>}
+        {initialError && <div className="error" role="alert">{initialError}</div>}
 
-        <button type="submit" className="btn loginBtn" disabled={busy}>
-          {busy ? 'Entrando...' : 'Entrar'}
+        <button type="submit" className="btn loginBtn">
+          Entrar
         </button>
 
         <Link className="forgotLink" href="/forgot-password">
