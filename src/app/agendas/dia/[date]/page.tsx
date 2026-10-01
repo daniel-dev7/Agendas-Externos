@@ -11,6 +11,14 @@ const statusLabel: Record<string, string> = {
   reserved: 'Reservado', confirmed: 'Confirmado', attended: 'Atendido', cancelled: 'Cancelado', no_show: 'Não compareceu',
 };
 
+
+function slotTime(slotNumber: number) {
+  const totalMinutes = (14 * 60) + ((slotNumber - 1) * 5);
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+  return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}`;
+}
+
 function shiftDate(value: string, amount: number) {
   const d = new Date(value + 'T12:00:00');
   d.setDate(d.getDate() + amount);
@@ -18,7 +26,8 @@ function shiftDate(value: string, amount: number) {
 }
 
 export default function DayAgendas() {
-  const { date } = useParams<{ date: string }>();
+  const params = useParams();
+  const date = String(params.date ?? '');
   const [profile, setProfile] = useState<any>(null);
   const [agendas, setAgendas] = useState<any[]>([]);
   const [appointments, setAppointments] = useState<any[]>([]);
@@ -96,13 +105,12 @@ export default function DayAgendas() {
                         <span className="agendaSlotNumber">{String(slotNumber).padStart(2, '0')}</span>
                         <span className="agendaSlotMain">
                           <strong>{item?.patient_name || 'Slot disponível'}</strong>
-                          <small>{item ? ((item.slot_time?.slice(0, 5) || 'Sem horário') + ' · ' + (statusLabel[item.status] || item.status)) : 'Clique para agendar paciente'}</small>
+                          <small>{slotTime(slotNumber)} · {item ? (statusLabel[item.status] || item.status) : 'Disponível'}</small>
                         </span>
                         <span className="agendaSlotState">{item ? <CircleCheck size={15}/> : <UserRound size={15}/>}</span>
                       </Link>;
                     })}
                   </div>
-">Abrir agenda</Link>
                 </section>
               );
             })}
