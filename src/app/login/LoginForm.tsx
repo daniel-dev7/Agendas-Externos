@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase-browser';
@@ -13,39 +13,49 @@ export default function LoginForm({
   notice: string;
 }) {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
 
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (busy) return;
+
+    const normalizedEmail = email.trim();
+
+    if (!normalizedEmail || !password) {
+      setError('Informe seu e-mail e sua senha.');
+      return;
+    }
+
+    setBusy(true);
+    setError('');
+
+    try {
+      const supabase = createClient();
+      const { error: authError } = await supabase.auth.signInWithPassword({
+        email: normalizedEmail,
+        password,
+      });
+
+      if (authError) {
+        setError(authError.message);
+        setBusy(false);
+        return;
+      }
+
+      window.location.href = '/dashboard';
+    } catch (loginError) {
+      console.error('Erro ao entrar:', loginError);
+      setError('Não foi possível realizar o login. Tente novamente.');
+      setBusy(false);
+    }
+  }
+
   return (
     <main className="login">
-      <form
-        className="loginCard"
-        onSubmit={async (event) => {
-          event.preventDefault();
-          if (busy) return;
-
-          setBusy(true);
-          setError('');
-
-          const form = new FormData(event.currentTarget);
-          const email = String(form.get('email') ?? '').trim();
-          const password = String(form.get('password') ?? '');
-
-          const supabase = createClient();
-          const { error: authError } = await supabase.auth.signInWithPassword({
-            email,
-            password,
-          });
-
-          if (authError) {
-            setError(authError.message);
-            setBusy(false);
-            return;
-          }
-
-          window.location.assign('/dashboard');
-        }}
-      >
+      <form className="loginCard" onSubmit={handleSubmit}>
         <div className="loginHeader">
           <span className="loginMark" aria-hidden="true">AC</span>
           <div>
@@ -58,7 +68,16 @@ export default function LoginForm({
 
         <label htmlFor="email">
           E-mail
-          <input id="email" name="email" type="email" required autoComplete="email" placeholder="seu@email.com" />
+          <input
+            id="email"
+            name="email"
+            type="email"
+            required
+            autoComplete="email"
+            placeholder="seu@email.com"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+          />
         </label>
 
         <label htmlFor="password">
@@ -71,6 +90,8 @@ export default function LoginForm({
               required
               autoComplete="current-password"
               placeholder="Digite sua senha"
+              value={password}
+              onChange={(event) => setPassword(event.target.value)}
             />
             <button
               type="button"
