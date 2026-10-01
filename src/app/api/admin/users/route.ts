@@ -1,1 +1,80 @@
-import{NextResponse}from'next/server';import{createClient as sc}from'@/lib/supabase-server';import{createClient}from'@supabase/supabase-js';export async function POST(req:Request){const s=await sc();const{data}=await s.auth.getClaims();const id=data?.claims?.sub;if(!id)return NextResponse.json({error:'Não autenticado'},{status:401});const{data:p}=await s.from('profiles').select('role').eq('id',id).single();if(p?.role!=='admin')return NextResponse.json({error:'Sem permissão'},{status:403});const b=await req.json();if(b.role==='clinic'&&!b.clinic_id)return NextResponse.json({error:'Clínica obrigatória'},{status:400});const a=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL!,process.env.SUPABASE_SECRET_KEY!,{auth:{autoRefreshToken:false,persistSession:false}});const{data:u,error}=await a.auth.admin.createUser({email:b.email,password:b.password,email_confirm:true,user_metadata:{full_name:b.full_name}});if(error)return NextResponse.json({error:error.message},{status:400});const{error:pe}=await a.from('profiles').update({full_name:b.full_name,role:b.role,clinic_id:b.role==='clinic'?b.clinic_id:null}).eq('id',u.user.id);if(pe)return NextResponse.json({error:pe.message},{status:400});return NextResponse.json({ok:true})}
+import { NextResponse } from 'next/server';
+import { createClient as serverClient } from '@/lib/supabase-server';
+import { createClient as adminClient } from '@supabase/supabase-js';
+
+async function requireAdmin() {
+  const s = await serverClient();
+  const { data } = await s.auth.getClaims();
+  const id = data?.claims?.sub;
+  if (!id) return null;
+  const { data: profile } = await s.from('profiles').select('role,active').eq('id', id).maybeSingle();
+  return profile?.role === 'admin' && profile.active ? { id } : null;
+}
+
+function getAdminClient() {
+  return adminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SECRET_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  );
+}
+
+export async function POST(req: Request) {
+  const current = await requireAdmin();
+  if (!current) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+
+  const b = await req.json();
+  if (!b.email || !b.password || !b.full_name || !['admin', 'operator', 'clinic'].includes(b.role)) {
+    return NextResponse.json({ error: 'Preencha todos os campos obrigatórios.' }, { status: 400 });
+  }
+  if (b.role === 'clinic' && !b.clinic_id) {
+    return NextResponse.json({ error: 'Clínica obrigatória.' }, { status: 400 });
+  }
+
+  const a = getAdminClient();
+  const { data: u, error } = await a.auth.admin.createUser({
+    email: b.email,
+    password: b.password,
+    email_confirm: true,
+    user_metadata: { full_name: b.full_name },
+  });
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+
+  const { error: pe } = await a.from('profiles').update({
+    full_name: b.full_name,
+    role: b.role,
+    clinic_id: b.role === 'clinic' ? b.clinic_id : null,
+    active: true,
+  }).eq('id', u.user.id);
+
+  if (pe) return NextResponse.json({ error: pe.message }, { status: 400 });
+  return NextResponse.json({ ok: true });
+}
+
+export async function PATCH(req: Request) {
+  const current = await requireAdmin();
+  if (!current) return NextResponse.json({ error: 'Sem permissão' }, { status: 403 });
+
+  const b = await req.json();
+  const id = String(b.id ?? '');
+  const role = String(b.role ?? '');
+  const clinic_id = b.clinic_id ? String(b.clinic_id) : null;
+  const active = Boolean(b.active);
+
+  if (!id || !['admin', 'operator', 'clinic'].includes(role)) {
+    return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 });
+  }
+  if (role === 'clinic' && !clinic_id) {
+    return NextResponse.json({ error: 'Clínica obrigatória para usuário de clínica.' }, { status: 400 });
+  }
+
+  const a = getAdminClient();
+  const { error } = await a.from('profiles').update({
+    role,
+    clinic_id: role === 'clinic' ? clinic_id : null,
+    active,
+  }).eq('id', id);
+
+  if (error) return NextResponse.json({ error: error.message }, { status: 400 });
+  return NextResponse.json({ ok: true });
+}
