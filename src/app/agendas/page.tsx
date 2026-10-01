@@ -1,7 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, CalendarDays } from 'lucide-react';
+import Link from 'next/link';
 import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
 
@@ -26,5 +27,5 @@ export default function Agendas() {
     {canCreate&&<div className="card form"><h3>Nova agenda</h3><input type="date" value={date} onChange={e=>setDate(e.target.value)}/>
       {profile.role==='admin'&&<select value={clinic} onChange={e=>setClinic(e.target.value)}><option value="">Selecione a clínica</option>{clinics.map(c=><option key={c.id} value={c.id}>{c.name}</option>)}</select>}
       <input type="number" min="1" placeholder="Capacidade" value={cap} onChange={e=>setCap(e.target.value)}/><button className="btn" onClick={add}><Plus size={16}/>Criar</button>{msg&&<div className="error">{msg}</div>}</div>}
-    <div className="tableWrap"><table><thead><tr><th>Data</th><th>Clínica</th><th>Capacidade</th><th>Status</th><th></th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td>{new Date(r.scheduled_date+'T12:00:00').toLocaleDateString('pt-BR')}</td><td>{r.clinics?.name}</td><td>{r.capacity}</td><td><span className="pill">{r.status}</span></td><td><a href={'/agendas/'+r.id}>Abrir</a></td></tr>)}</tbody></table>{!rows.length&&<div className="empty">Nenhuma agenda encontrada.</div>}</div></Shell>;
+    <div className="tableWrap"><table><thead><tr><th>Data</th><th>Clínica</th><th>Capacidade</th><th>Status</th><th></th></tr></thead><tbody>{rows.map(r=><tr key={r.id}><td><Link href={'/agendas/dia/'+r.scheduled_date} className="dayTableLink"><CalendarDays size={14}/>{new Date(r.scheduled_date+'T12:00:00').toLocaleDateString('pt-BR')}</Link></td><td>{r.clinics?.name}</td><td>{r.capacity}</td><td><span className="pill">{r.status}</span></td><td><Link href={'/agendas/dia/'+r.scheduled_date} className="tableAction">Ver dia</Link></td></tr>)}</tbody></table>{!rows.length&&<div className="empty">Nenhuma agenda encontrada.</div>}</div></Shell>;
 }
