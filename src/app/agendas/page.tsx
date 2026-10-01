@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase-browser';
 
 export default function Agendas() {
   const [profile,setProfile]=useState<any>(null),[rows,setRows]=useState<any[]>([]),[clinics,setClinics]=useState<any[]>([]);
-  const [date,setDate]=useState(''),[clinic,setClinic]=useState(''),[cap,setCap]=useState('20'),[msg,setMsg]=useState('');
+  const [date,setDate]=useState(''),[clinic,setClinic]=useState(''),[cap,setCap]=useState(''),[msg,setMsg]=useState('');
   async function load(){const s=createClient();const{data:{user}}=await s.auth.getUser();if(!user)return;
     const{data:p}=await s.from('profiles').select('*,clinics(id,name)').eq('id',user.id).single();setProfile(p);
     let q=s.from('agendas').select('id,scheduled_date,status,capacity,clinics(id,name)').order('scheduled_date',{ascending:true});
@@ -16,6 +16,7 @@ export default function Agendas() {
   }
   useEffect(()=>{load()},[]);
   async function add(){setMsg('');const id=profile?.role==='clinic'?profile.clinic_id:clinic;if(!date||!id)return setMsg('Informe data e clínica.');
+    if(!cap||Number(cap)<1)return setMsg('Informe uma capacidade válida.');
     const{error}=await createClient().from('agendas').insert({clinic_id:id,scheduled_date:date,capacity:Number(cap),status:'open'});
     if(error)setMsg(error.message);else{setDate('');await load();}
   }
