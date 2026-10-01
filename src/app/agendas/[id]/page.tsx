@@ -1,13 +1,14 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useParams } from 'next/navigation';
 import { ArrowLeft, CalendarPlus, XCircle, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
 
 export default function Detail() {
-  const { id } = require('next/navigation').useParams<{id:string}>();
+  const { id } = useParams<{id:string}>();
   const [profile,setProfile]=useState<any>(),[agenda,setAgenda]=useState<any>(),[rows,setRows]=useState<any[]>([]),[patients,setPatients]=useState<any[]>([]);
   const [patientId,setPatientId]=useState(''),[time,setTime]=useState('07:00'),[msg,setMsg]=useState('');
 
