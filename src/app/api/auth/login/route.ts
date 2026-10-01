@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
+import { cookies } from 'next/headers';
 
 export async function POST(request: Request) {
   try {
@@ -16,6 +16,7 @@ export async function POST(request: Request) {
     }
 
     const cookieStore = await cookies();
+    let response = NextResponse.json({ ok: true });
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
           setAll(cookiesToSet) {
             cookiesToSet.forEach(({ name, value, options }) => {
               cookieStore.set(name, value, options);
+              response.cookies.set(name, value, options);
             });
           },
         },
@@ -43,14 +45,11 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 401 });
     }
 
-    const response = NextResponse.json({ ok: true });
-
-    // Explicitly copy the Supabase session cookies onto the HTTP response.
-    // This guarantees the browser receives the authenticated session before
-    // the client navigates to /dashboard.
-    cookieStore.getAll().forEach(({ name, value, ...options }) => {
+    // Re-read the cookies after Supabase has created the authenticated session.
+    // The explicit response cookies ensure the browser receives the session.
+    for (const { name, value, ...options } of cookieStore.getAll()) {
       response.cookies.set(name, value, options);
-    });
+    }
 
     return response;
   } catch (error) {
