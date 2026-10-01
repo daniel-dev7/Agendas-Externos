@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Eye, EyeOff } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 
@@ -9,7 +8,6 @@ export default function LoginForm({ error: initialError }: { error: string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
-  const router = useRouter();
 
   return (
     <main className="login">
@@ -38,8 +36,7 @@ export default function LoginForm({ error: initialError }: { error: string }) {
             return;
           }
 
-          router.replace('/dashboard');
-          router.refresh();
+          window.location.assign('/dashboard');
         }}
       >
         <div className="loginHeader">
