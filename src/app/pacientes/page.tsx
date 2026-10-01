@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from 'react';
 import { ContactRound, Plus, Search } from 'lucide-react';
+import Link from 'next/link';
 import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
 
@@ -82,7 +83,7 @@ export default function Patients() {
     </div>
 
     <div className="tableWrap"><table><thead><tr><th>Paciente</th><th>Telefone</th><th>Nascimento</th><th>CPF</th></tr></thead><tbody>
-      {filtered.map(r=><tr key={r.id}><td><strong>{r.full_name}</strong></td><td>{formatPhone(r.phone)}</td><td>{new Date(r.birth_date+'T12:00:00').toLocaleDateString('pt-BR')}</td><td>{formatCpf(r.cpf)}</td></tr>)}
+      {filtered.map(r=><tr key={r.id}><td><Link href={'/pacientes/'+r.id} className="patientNameLink"><strong>{r.full_name}</strong></Link></td><td>{formatPhone(r.phone)}</td><td>{new Date(r.birth_date+'T12:00:00').toLocaleDateString('pt-BR')}</td><td>{formatCpf(r.cpf)}</td></tr>)}
     </tbody></table>{!filtered.length&&<div className="empty">Nenhum paciente encontrado.</div>}</div>
   </Shell>;
 }
