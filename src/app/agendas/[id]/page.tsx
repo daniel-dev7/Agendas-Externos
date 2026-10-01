@@ -1,32 +1,35 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ArrowLeft, CalendarPlus, XCircle } from 'lucide-react';
+import { ArrowLeft, CalendarPlus, XCircle, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
 
 export default function Detail() {
   const { id } = require('next/navigation').useParams<{id:string}>();
-  const [profile,setProfile]=useState<any>(),[agenda,setAgenda]=useState<any>(),[rows,setRows]=useState<any[]>([]);
-  const [name,setName]=useState(''),[time,setTime]=useState('07:00'),[msg,setMsg]=useState('');
+  const [profile,setProfile]=useState<any>(),[agenda,setAgenda]=useState<any>(),[rows,setRows]=useState<any[]>([]),[patients,setPatients]=useState<any[]>([]);
+  const [patientId,setPatientId]=useState(''),[time,setTime]=useState('07:00'),[msg,setMsg]=useState('');
 
   async function load(){
     const s=createClient();const{data:{user}}=await s.auth.getUser();if(!user)return;
     const{data:p}=await s.from('profiles').select('*,clinics(id,name)').eq('id',user.id).single();setProfile(p);
-    const[{data:a},{data:r}]=await Promise.all([
+    const[{data:a},{data:r},{data:pt}]=await Promise.all([
       s.from('agendas').select('id,scheduled_date,status,capacity,clinics(name)').eq('id',id).single(),
-      s.from('appointments').select('id,patient_name,slot_time,status').eq('agenda_id',id).order('slot_time')
+      s.from('appointments').select('id,patient_name,patient_id,slot_time,status').eq('agenda_id',id).order('slot_time'),
+      s.from('patients').select('id,full_name,cpf').order('full_name')
     ]);
-    setAgenda(a);setRows(r||[]);
+    setAgenda(a);setRows(r||[]);setPatients(pt||[]);
   }
   useEffect(()=>{load()},[id]);
 
   async function add(){
     setMsg('');
-    if(!name.trim())return setMsg('Informe o nome.');
-    const{error}=await createClient().from('appointments').insert({agenda_id:id,patient_name:name.trim(),slot_time:time,status:'reserved'});
-    if(error)setMsg(error.message);else{setName('');load();}
+    if(!patientId)return setMsg('Selecione um paciente cadastrado.');
+    const patient=patients.find(p=>p.id===patientId);
+    if(!patient)return setMsg('Paciente não encontrado.');
+    const{error}=await createClient().from('appointments').insert({agenda_id:id,patient_id:patient.id,patient_name:patient.full_name,slot_time:time,status:'reserved'});
+    if(error)setMsg(error.message);else{setPatientId('');load();}
   }
 
   async function cancelAppointment(appointmentId:string){
@@ -54,7 +57,7 @@ export default function Detail() {
     {canBook&&<div className="card form appointmentForm">
       <h3><CalendarPlus size={18}/> Novo agendamento</h3>
       <div className="appointmentFields">
-        <input placeholder="Nome do paciente" value={name} onChange={e=>setName(e.target.value)}/>
+        <div className="patientSelectWrap"><UserRound size={16}/><select value={patientId} onChange={e=>setPatientId(e.target.value)}><option value="">Selecione o paciente</option>{patients.map(p=><option key={p.id} value={p.id}>{p.full_name} · {p.cpf.slice(0,3)}.***.***-**</option>)}</select></div>
         <input type="time" value={time} onChange={e=>setTime(e.target.value)}/>
         <button className="btn" onClick={add}>Agendar</button>
       </div>
