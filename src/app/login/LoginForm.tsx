@@ -3,7 +3,6 @@
 import { useState, type FormEvent } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
 import Link from 'next/link';
-import { createClient } from '@/lib/supabase-browser';
 
 export default function LoginForm({
   error: initialError,
@@ -33,19 +32,21 @@ export default function LoginForm({
     setError('');
 
     try {
-      const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email: normalizedEmail,
-        password,
+      const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: normalizedEmail, password }),
       });
 
-      if (authError) {
-        setError(authError.message);
+      const result = await response.json();
+
+      if (!response.ok) {
+        setError(result?.error || 'Não foi possível realizar o login.');
         setBusy(false);
         return;
       }
 
-      window.location.href = '/dashboard';
+      window.location.replace('/dashboard');
     } catch (loginError) {
       console.error('Erro ao entrar:', loginError);
       setError('Não foi possível realizar o login. Tente novamente.');
