@@ -40,7 +40,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
               <Icon size={18} />{label}
             </Link>
           ))}
-          {(profile.role === 'admin' || profile.role === 'operator') && (
+          {profile.role === 'admin' && (
             <>
               <div className="navLabel navLabelSpaced">Administração</div>
               <Link className={path.startsWith('/usuarios') ? 'nav active' : 'nav'} href="/usuarios">
