@@ -8,7 +8,8 @@ import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
 
 export default function Detail() {
-  const { id } = useParams<{id:string}>();
+  const params = useParams();
+  const id = String(params.id ?? '');
   const [profile,setProfile]=useState<any>(),[agenda,setAgenda]=useState<any>(),[rows,setRows]=useState<any[]>([]),[patients,setPatients]=useState<any[]>([]);
   const [patientId,setPatientId]=useState(''),[time,setTime]=useState('07:00'),[msg,setMsg]=useState('');
 
