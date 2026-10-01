@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, CircleCheck, UserRound } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import Shell from '@/components/Shell';
@@ -37,7 +37,7 @@ export default function DayAgendas() {
     const ids = (agendaRows || []).map(a => a.id);
     setAgendas(agendaRows || []);
     if (!ids.length) { setAppointments([]); setLoading(false); return; }
-    const { data: appointmentRows } = await s.from('appointments').select('id,agenda_id,patient_name,slot_time,status').in('agenda_id', ids).neq('status', 'cancelled').order('slot_time', { ascending: true });
+    const { data: appointmentRows } = await s.from('appointments').select('id,agenda_id,patient_name,slot_number,slot_time,status').in('agenda_id', ids).neq('status', 'cancelled').order('slot_time', { ascending: true });
     setAppointments(appointmentRows || []);
     setLoading(false);
   }
@@ -88,17 +88,21 @@ export default function DayAgendas() {
                     <h2>{agenda.clinics?.name || 'Clínica'}</h2>
                     <div className="agendaColumnInfo"><span>{used}/{agenda.capacity} ocupados</span><span>{percent}%</span></div>
                     <div className="capacityTrack"><span style={{ width: percent + '%' }} /></div>
-                  </header>
-                  <div className="agendaSlots">
-                    {items.map((item) => (
-                      <Link href={'/agendas/' + agenda.id} className={'agendaPatient status-' + item.status} key={item.id}>
-                        <div className="agendaPatientTime"><strong>{item.slot_time?.slice(0, 5) || '—'}</strong><span>{statusLabel[item.status] || item.status}</span></div>
-                        <div className="agendaPatientName">{item.patient_name}</div><ExternalLink size={14} />
-                      </Link>
-                    ))}
-                    {!items.length && <div className="agendaColumnEmpty">Nenhum paciente agendado</div>}
+                        <div className="agendaSlots">
+                    {Array.from({ length: agenda.capacity }, (_, index) => {
+                      const slotNumber = index + 1;
+                      const item = items.find(x => x.slot_number === slotNumber);
+                      return <Link href={'/agendas/' + agenda.id + '/slot/' + slotNumber} className={'agendaSlot ' + (item ? 'occupied' : 'available')} key={slotNumber}>
+                        <span className="agendaSlotNumber">{String(slotNumber).padStart(2, '0')}</span>
+                        <span className="agendaSlotMain">
+                          <strong>{item?.patient_name || 'Slot disponível'}</strong>
+                          <small>{item ? ((item.slot_time?.slice(0, 5) || 'Sem horário') + ' · ' + (statusLabel[item.status] || item.status)) : 'Clique para agendar paciente'}</small>
+                        </span>
+                        <span className="agendaSlotState">{item ? <CircleCheck size={15}/> : <UserRound size={15}/>}</span>
+                      </Link>;
+                    })}
                   </div>
-                  <Link href={'/agendas/' + agenda.id} className="agendaColumnAction">Abrir agenda</Link>
+">Abrir agenda</Link>
                 </section>
               );
             })}
