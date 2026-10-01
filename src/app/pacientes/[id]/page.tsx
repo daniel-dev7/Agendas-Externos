@@ -18,7 +18,7 @@ const actionText:Record<string,string>={
 };
 
 export default function PatientHistory(){
- const {id}=useParams<{id:string}>();
+ const params=useParams(); const id=String(params.id??'');
  const [profile,setProfile]=useState<any>(null),[patient,setPatient]=useState<any>(null),[logs,setLogs]=useState<any[]>([]),[appointments,setAppointments]=useState<any[]>([]),[loading,setLoading]=useState(true);
 
  async function load(){
