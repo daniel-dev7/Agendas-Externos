@@ -41,6 +41,7 @@ export default function SlotPage() {
   const [patientId, setPatientId] = useState('');
   const [msg, setMsg] = useState('');
   const searchRef = useRef<HTMLDivElement>(null);
+  const patientInputRef = useRef<HTMLInputElement>(null);
 
   async function load() {
     const s = createClient();
@@ -56,6 +57,7 @@ export default function SlotPage() {
   }
 
   useEffect(() => { load(); }, [agendaId, slotNumber]);
+  useEffect(() => { if (!appointment) patientInputRef.current?.focus(); }, [appointment]);
   useEffect(() => {
     function outside(event: MouseEvent) {
       if (searchRef.current && !searchRef.current.contains(event.target as Node)) setOpen(false);
@@ -111,12 +113,9 @@ export default function SlotPage() {
   const formattedDate = new Date(agenda.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
 
   return <Shell profile={profile}>
-    <div className="slotPageHeader">
-      <Link href={'/agendas/dia/' + agenda.scheduled_date} className="backLink"><ArrowLeft size={15}/> Voltar para o dia</Link>
-      <div className="slotHeading">
-        <div className="slotIcon"><CalendarDays size={19}/></div>
-        <div><span className="panelKicker">Slot {String(slotNumber).padStart(2, '0')}</span><h1>{agenda.clinics?.name || 'Clínica'}</h1><p className="muted">{formattedDate} · {slotTime} · Capacidade {agenda.capacity}</p></div>
-      </div>
+    <div className="compactSlotHeader">
+      <Link href={'/agendas/dia/' + agenda.scheduled_date} className="backLink"><ArrowLeft size={14}/></Link>
+      <div><strong>{agenda.clinics?.name || 'Clínica'}</strong><span>{formattedDate} · Slot {String(slotNumber).padStart(2, '0')} · {slotTime}</span></div>
     </div>
 
     {appointment ? <div className="slotOccupied card">
@@ -126,14 +125,12 @@ export default function SlotPage() {
       {canBook && <button className="btn slotCancel" onClick={cancel}><XCircle size={15}/> Cancelar agendamento</button>}
       {msg && <div className="error">{msg}</div>}
     </div> : canBook ? <div className="card slotBookingCard">
-      <div className="slotState"><UserRound size={18}/><span>Slot disponível</span></div>
-      <h2>Agendar paciente</h2>
-      <p className="muted">Selecione o paciente para ocupar este slot.</p>
+      <div className="slotBookingLine"><div className="slotState"><UserRound size={16}/><span>Disponível · {slotTime}</span></div></div>
       <div className="slotBookingGrid">
         <div className="slotPatientSearch" ref={searchRef}>
           <div className="patientSearchInput">
             <Search size={16}/>
-            <input value={query} onChange={e => { setQuery(e.target.value); setPatientId(''); setOpen(true); }} onFocus={() => setOpen(true)} placeholder="Buscar por nome, telefone ou CPF" autoComplete="off"/>
+            <input ref={patientInputRef} value={query} onChange={e => { setQuery(e.target.value); setPatientId(''); setOpen(true); }} onFocus={() => setOpen(true)} placeholder="Buscar por nome, telefone ou CPF" autoComplete="off"/>
             {query && <button type="button" className="patientSearchClear" onClick={() => { setQuery(''); setPatientId(''); setOpen(true); }} aria-label="Limpar busca"><X size={15}/></button>}
             <ChevronDown size={16} className={open ? 'patientSearchChevron open' : 'patientSearchChevron'}/>
           </div>
