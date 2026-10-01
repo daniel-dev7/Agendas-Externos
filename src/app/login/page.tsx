@@ -1,7 +1,6 @@
 'use client';
 
 import {useState} from 'react';
-import {useRouter} from 'next/navigation';
 import {createClient} from '@/lib/supabase-browser';
 
 export default function Login(){
@@ -9,21 +8,18 @@ export default function Login(){
   const [password,setPassword]=useState('');
   const [error,setError]=useState('');
   const [busy,setBusy]=useState(false);
-  const router=useRouter();
+  const [success,setSuccess]=useState(false);
 
   async function submit(e:React.FormEvent<HTMLFormElement>){
     e.preventDefault();
     if(busy)return;
     setBusy(true);
     setError('');
+    setSuccess(false);
 
     try{
       const client=createClient();
-      if(!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY){
-        throw new Error('Configuração do Supabase não encontrada no ambiente da aplicação.');
-      }
-
-      const {error:signInError}=await client.auth.signInWithPassword({
+      const {data,error:signInError}=await client.auth.signInWithPassword({
         email:email.trim(),
         password
       });
@@ -33,8 +29,13 @@ export default function Login(){
         return;
       }
 
-      router.replace('/dashboard');
-      router.refresh();
+      if(!data.session){
+        setError('O login não criou uma sessão. Verifique o usuário e as configurações de autenticação do Supabase.');
+        return;
+      }
+
+      setSuccess(true);
+      window.location.assign('/dashboard');
     }catch(err){
       setError(err instanceof Error ? err.message : 'Não foi possível realizar o login.');
     }finally{
@@ -50,6 +51,7 @@ export default function Login(){
       <label>E-mail<input type="email" value={email} onChange={e=>setEmail(e.target.value)} required autoComplete="email"/></label>
       <label>Senha<input type="password" value={password} onChange={e=>setPassword(e.target.value)} required autoComplete="current-password"/></label>
       {error&&<div className="error" role="alert">{error}</div>}
+      {success&&<div className="notice" role="status">Login realizado. Abrindo o painel...</div>}
       <button type="submit" className="btn" disabled={busy}>{busy?'Entrando...':'Entrar'}</button>
     </form>
   </main>
