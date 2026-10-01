@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { CalendarDays, Building2, LayoutDashboard, LogOut, UsersRound } from 'lucide-react';
+import { CalendarDays, Building2, LayoutDashboard, LogOut, UsersRound, MapPinned, ContactRound } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 
 export default function Shell({ children, profile }: { children: React.ReactNode; profile: any }) {
@@ -11,6 +11,8 @@ export default function Shell({ children, profile }: { children: React.ReactNode
   const items = [
     ['/dashboard', 'Visão geral', LayoutDashboard],
     ['/agendas', 'Agendas', CalendarDays],
+    ['/agendas/mapa', 'Mapa de disponibilidade', MapPinned],
+    ['/pacientes', 'Pacientes', ContactRound],
     ['/clinicas', 'Clínicas', Building2],
   ] as const;
 
