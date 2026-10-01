@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
 import { Building2, Plus, X } from 'lucide-react';
 import { createClinic } from '@/app/clinicas/actions';
 
@@ -8,6 +9,7 @@ export default function NewClinicForm() {
   const [open, setOpen] = useState(false);
   const [message, setMessage] = useState('');
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
   const formRef = useRef<HTMLFormElement>(null);
 
   function submit(formData: FormData) {
@@ -20,6 +22,7 @@ export default function NewClinicForm() {
       }
       formRef.current?.reset();
       setMessage('Clínica criada com sucesso.');
+      router.refresh();
     });
   }
 
