@@ -2,47 +2,16 @@
 
 import { useState } from 'react';
 import { Eye, EyeOff } from 'lucide-react';
-import { createClient } from '@/lib/supabase-browser';
+import { login } from './actions';
 
 export default function LoginForm({ error: initialError }: { error: string }) {
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState(initialError);
   const [busy, setBusy] = useState(false);
 
-  async function submit(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
-
-    setBusy(true);
-    setError('');
-
-    const form = new FormData(event.currentTarget);
-    const email = String(form.get('email') ?? '').trim();
-    const password = String(form.get('password') ?? '');
-
-    try {
-      const supabase = createClient();
-      const { error: authError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (authError) {
-        setError(authError.message);
-        return;
-      }
-
-      window.location.assign('/dashboard');
-    } catch {
-      setError('Não foi possível realizar o login. Tente novamente.');
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <main className="login">
-      <form className="loginCard" onSubmit={submit}>
+      <form className="loginCard" action={async (formData) => { setBusy(true); setError(""); await login(formData); }}>
         <div className="loginHeader">
           <span className="loginMark" aria-hidden="true">AC</span>
           <div>
