@@ -14,11 +14,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const cookiesToSet: Array<{
-      name: string;
-      value: string;
-      options?: any;
-    }> = [];
+    const response = NextResponse.json(
+      { ok: true },
+      {
+        status: 200,
+        headers: {
+          'Cache-Control': 'private, no-store',
+        },
+      }
+    );
 
     const supabase = createServerClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -28,9 +32,9 @@ export async function POST(request: NextRequest) {
           getAll() {
             return request.cookies.getAll();
           },
-          setAll(cookies) {
-            cookies.forEach(({ name, value, options }) => {
-              cookiesToSet.push({ name, value, options });
+          setAll(cookiesToSet) {
+            cookiesToSet.forEach(({ name, value, options }) => {
+              response.cookies.set(name, value, options);
             });
           },
         },
@@ -48,15 +52,6 @@ export async function POST(request: NextRequest) {
         { status: 401 }
       );
     }
-
-    const response = NextResponse.redirect(
-      new URL('/dashboard', request.url),
-      303
-    );
-
-    cookiesToSet.forEach(({ name, value, options }) => {
-      response.cookies.set(name, value, options);
-    });
 
     return response;
   } catch {
