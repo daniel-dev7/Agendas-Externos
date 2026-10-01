@@ -56,7 +56,7 @@ export default function Patients() {
   const canCreate=profile.role==='admin'||profile.role==='operator';
   const filtered=rows.filter(r=>{
     const q=search.toLowerCase().trim();
-    return !q || r.full_name.toLowerCase().includes(q) || r.cpf.includes(onlyDigits(q));
+    const digits=onlyDigits(q); return !q || r.full_name.toLowerCase().includes(q) || (digits.length>0 && r.cpf.includes(digits));
   });
 
   return <Shell profile={profile}>
