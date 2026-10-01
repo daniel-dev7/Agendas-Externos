@@ -1,1 +1,27 @@
-import {getCurrentProfile} from '@/lib/auth';import {createClient} from '@/lib/supabase-server';import {redirect} from 'next/navigation';import Shell from '@/components/Shell';import NewUserForm from '@/components/NewUserForm';export default async function Users(){const x=await getCurrentProfile();if(!x||!['admin','operator'].includes(x.profile.role))redirect('/dashboard');const s=await createClient();const[{data:users},{data:clinics}]=await Promise.all([s.from('profiles').select('id,full_name,role,active,clinics(name)').order('full_name'),s.from('clinics').select('id,name').eq('active',true).order('name')]);return <Shell profile={x.profile}><h1>Usuários</h1><NewUserForm clinics={clinics||[]}/><div className="tableWrap"><table><thead><tr><th>Nome</th><th>Perfil</th><th>Clínica</th><th>Status</th></tr></thead><tbody>{(users||[]).map(u=><tr key={u.id}><td>{u.full_name}</td><td>{u.role}</td><td>{Array.isArray(u.clinics)?(u.clinics[0]?.name||'Plataforma'):'Plataforma'}</td><td>{u.active?'Ativo':'Inativo'}</td></tr>)}</tbody></table></div></Shell>}
+import { getCurrentProfile } from '@/lib/auth';
+import { createClient } from '@/lib/supabase-server';
+import { redirect } from 'next/navigation';
+import Shell from '@/components/Shell';
+import UserManagement from '@/components/UserManagement';
+
+export const dynamic = 'force-dynamic';
+
+export default async function Users() {
+  const x = await getCurrentProfile();
+  if (!x || x.profile.role !== 'admin') redirect('/dashboard');
+
+  const s = await createClient();
+  const [{ data: users }, { data: clinics }] = await Promise.all([
+    s.from('profiles').select('id,full_name,role,active,clinic_id').order('full_name'),
+    s.from('clinics').select('id,name').eq('active', true).order('name'),
+  ]);
+
+  return (
+    <Shell profile={x.profile}>
+      <div className="pageHeader">
+        <div><span className="panelKicker">Controle de acesso</span><h1>Usuários</h1><p className="muted">Criação de contas e gerenciamento de permissões.</p></div>
+      </div>
+      <UserManagement clinics={clinics || []} users={users || []} />
+    </Shell>
+  );
+}
