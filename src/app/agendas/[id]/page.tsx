@@ -178,6 +178,30 @@ export default function Detail() {
       {!rows.length&&<div className="empty">Nenhum agendamento nesta agenda.</div>}
     </div>
     {canManageAgenda&&<p className="muted agendaPermissionNote">Você pode gerenciar esta agenda pela tela de Agendas.</p>}
+    <style jsx>{`
+      .patientSearchField{position:relative;min-width:0}
+      .patientSearchInput{height:43px;display:flex;align-items:center;gap:8px;border:1px solid #cfd7e6;border-radius:10px;padding:0 11px;background:#fff;color:#667085;transition:border-color .15s,box-shadow .15s}
+      .patientSearchInput:focus-within,.patientSearchInput.isOpen{border-color:#155eef;box-shadow:0 0 0 3px #155eef18}
+      .patientSearchInput input{width:100%;min-width:0;height:100%;padding:0;border:0!important;outline:0;background:transparent;box-shadow:none!important;color:#172033;font:inherit}
+      .patientSearchInput input::placeholder{color:#98a2b3}
+      .patientSearchClear{width:26px;height:26px;display:grid;place-items:center;flex:0 0 26px;border:0;border-radius:7px;background:transparent;color:#98a2b3;cursor:pointer}
+      .patientSearchClear:hover{background:#f2f4f7;color:#344054}
+      .patientSearchChevron{flex:0 0 16px;transition:transform .15s}
+      .patientSearchChevron.open{transform:rotate(180deg);color:#155eef}
+      .patientSearchDropdown{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:50;max-height:290px;overflow-y:auto;background:#fff;border:1px solid #dbe3ef;border-radius:12px;box-shadow:0 16px 35px #10182818;padding:5px}
+      .patientSearchOption{width:100%;display:flex;align-items:center;gap:10px;padding:10px 9px;border:0;border-radius:9px;background:#fff;color:#101828;text-align:left;cursor:pointer}
+      .patientSearchOption:hover,.patientSearchOption.selected{background:#f5f8ff}
+      .patientSearchOptionIcon{width:31px;height:31px;display:grid;place-items:center;flex:0 0 31px;border-radius:9px;background:#eaf1ff;color:#155eef}
+      .patientSearchOptionText{min-width:0;display:grid;gap:3px}
+      .patientSearchOptionText strong{font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .patientSearchOptionText small{font-size:10px;color:#667085;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+      .patientSearchEmpty{padding:16px 12px;color:#98a2b3;font-size:11px;text-align:center}
+      .patientSelectedHint{margin-top:8px;color:#667085;font-size:11px}
+      .patientSelectedHint strong{color:#344054}
+      @media(max-width:650px){
+        .patientSearchDropdown{position:relative;top:auto;left:auto;right:auto;margin-top:6px;box-shadow:0 10px 25px #10182812}
+      }
+    `}</style>
   </Shell>;
 }
 
