@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { ContactRound, Plus, Search } from 'lucide-react';
+import { ContactRound, Plus, Search, UserRound, Phone, CalendarDays, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
@@ -69,10 +69,10 @@ export default function Patients() {
     {canCreate&&<div className="card patientCreateCard">
       <div className="patientCreateTitle"><div className="patientIcon"><Plus size={17}/></div><div><h3>Novo paciente</h3><p>Somente administradores e operadores podem cadastrar pacientes.</p></div></div>
       <div className="patientFormGrid">
-        <label><span>Nome completo</span><input placeholder="Nome completo" value={name} onChange={e=>setName(e.target.value)}/></label>
-        <label><span>Telefone</span><input placeholder="(91) 99999-9999" value={formatPhone(phone)} onChange={e=>setPhone(onlyDigits(e.target.value))}/></label>
-        <label><span>Data de nascimento</span><input type="date" value={birthDate} onChange={e=>setBirthDate(e.target.value)}/></label>
-        <label><span>CPF</span><input placeholder="000.000.000-00" value={formatCpf(cpf)} onChange={e=>setCpf(onlyDigits(e.target.value))}/></label>
+        <label><span>Nome completo</span><div className="patientInput"><UserRound size={16}/><input placeholder="Digite o nome completo" value={name} onChange={e=>setName(e.target.value)}/></div></label>
+        <label><span>Telefone</span><div className="patientInput"><Phone size={16}/><input placeholder="(91) 99999-9999" value={formatPhone(phone)} onChange={e=>setPhone(onlyDigits(e.target.value))}/></div></label>
+        <label><span>Data de nascimento</span><div className="patientInput"><CalendarDays size={16}/><input type="date" value={birthDate} onChange={e=>setBirthDate(e.target.value)}/></div></label>
+        <label><span>CPF</span><div className="patientInput"><CreditCard size={16}/><input placeholder="000.000.000-00" value={formatCpf(cpf)} onChange={e=>setCpf(onlyDigits(e.target.value))}/></div></label>
         <button className="btn" onClick={addPatient} disabled={saving}><Plus size={16}/>{saving?'Salvando...':'Cadastrar paciente'}</button>
       </div>
       {msg&&<div className={msg.includes('sucesso')?'notice':'error'}>{msg}</div>}
