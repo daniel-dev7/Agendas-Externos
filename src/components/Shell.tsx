@@ -78,7 +78,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
               </Link>
             </>
           )}
-          <div className="sideFooter">Agenda Clínica<br /><span>Operação segura</span></div>
+          <div className="sideFooter">Desenvolvido por Daniel Arruda</div>
         </aside>
         <main>{children}</main>
       </div>
