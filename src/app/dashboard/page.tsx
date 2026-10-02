@@ -10,6 +10,7 @@ export const dynamic = 'force-dynamic';
 export default async function Dashboard() {
   const x = await getCurrentProfile();
   if (!x) redirect('/login');
+  if (x.profile.role !== 'admin' && x.profile.permissions?.overview === false) redirect('/agendas');
 
   const s = await createClient();
   const isClinic = x.profile.role === 'clinic';
