@@ -145,7 +145,7 @@ export default function UserManagement({ clinics, users }: { clinics: Clinic[]; 
                 <div className="permissionGrid">
                   {group.items.map(([key, label]) => {
                     const checked = editing.permissions?.[key] ?? false;
-                    const locked = editing.role === 'admin' || (editing.role === 'clinic' && ['clinics', 'users', 'dashboard', 'clinic_manage'].includes(key));
+                    const locked = editing.role === 'admin' || (editing.role === 'clinic' && new Set(['clinics', 'users', 'dashboard', 'clinic_manage']).has(key));
                     return (
                       <label className={`permissionCheck ${locked ? 'locked' : ''}`} key={key}>
                         <input type="checkbox" checked={checked} disabled={locked} onChange={() => togglePermission(key)} />
