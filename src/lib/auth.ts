@@ -10,7 +10,7 @@ export async function getCurrentProfile() {
 
   const { data: profile, error } = await s
     .from('profiles')
-    .select('id,full_name,role,clinic_id,active')
+    .select('id,full_name,role,clinic_id,active,permissions')
     .eq('id', userId)
     .maybeSingle();
 
