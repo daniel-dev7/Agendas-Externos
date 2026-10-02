@@ -10,7 +10,7 @@ export default async function Clinicas() {
   const x = await getCurrentProfile();
   if (!x) redirect('/login');
 
-  if (!['admin', 'operator'].includes(x.profile.role)) {
+  if (!['admin', 'operator'].includes(x.profile.role) || (x.profile.role !== 'admin' && x.profile.permissions?.clinics === false)) {
     redirect('/dashboard');
   }
 
