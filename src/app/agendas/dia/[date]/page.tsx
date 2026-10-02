@@ -11,7 +11,6 @@ const statusLabel: Record<string, string> = {
   reserved: 'Reservado', confirmed: 'Confirmado', attended: 'Atendido', cancelled: 'Cancelado', no_show: 'Não compareceu',
 };
 
-
 function slotTime(slotNumber: number) {
   const totalMinutes = (14 * 60) + ((slotNumber - 1) * 5);
   const hours = Math.floor(totalMinutes / 60);
@@ -97,18 +96,27 @@ export default function DayAgendas() {
                     <h2>{agenda.clinics?.name || 'Clínica'}</h2>
                     <div className="agendaColumnInfo"><span>{used}/{agenda.capacity} ocupados</span><span>{percent}%</span></div>
                     <div className="capacityTrack"><span style={{ width: percent + '%' }} /></div>
-                        <div className="agendaSlots">
+                  </header>
+                  <div className="agendaSlots">
                     {Array.from({ length: agenda.capacity }, (_, index) => {
                       const slotNumber = index + 1;
-                      const item = items.find(x => x.slot_number === slotNumber);
-                      return <Link href={'/agendas/' + agenda.id + '/slot/' + slotNumber} className={'agendaSlot ' + (item ? 'occupied' : 'available')} key={slotNumber}>
-                        <span className="agendaSlotNumber">{String(slotNumber).padStart(2, '0')}</span>
-                        <span className="agendaSlotMain">
-                          <strong>{item?.patient_name || 'Slot disponível'}</strong>
-                          <small>{slotTime(slotNumber)} · {item ? (statusLabel[item.status] || item.status) : 'Disponível'}</small>
-                        </span>
-                        <span className="agendaSlotState">{item ? <CircleCheck size={15}/> : <UserRound size={15}/>}</span>
-                      </Link>;
+                      const item = items.find(x => Number(x.slot_number) === slotNumber);
+                      const time = slotTime(slotNumber);
+                      return (
+                        <Link
+                          href={'/agendas/' + agenda.id + '/slot/' + slotNumber}
+                          className={'agendaSlotCard ' + (item ? 'occupied' : 'available')}
+                          key={slotNumber}
+                          aria-label={item ? `${time} — ${item.patient_name}` : `${time} — slot vazio, agendar paciente`}
+                        >
+                          <span className="agendaSlotCardTime">{time}</span>
+                          <span className="agendaSlotCardBody">
+                            <span className="agendaSlotCardPatient">{item?.patient_name || 'Sem paciente'}</span>
+                            <span className="agendaSlotCardStatus">{item ? (statusLabel[item.status] || item.status) : 'Clique para agendar'}</span>
+                          </span>
+                          <span className="agendaSlotCardIcon">{item ? <CircleCheck size={13}/> : <UserRound size={13}/>}</span>
+                        </Link>
+                      );
                     })}
                   </div>
                 </section>
