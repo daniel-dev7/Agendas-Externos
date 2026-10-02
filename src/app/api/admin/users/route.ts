@@ -44,6 +44,7 @@ export async function POST(req: Request) {
   }
 
   const a = getAdminClient();
+  const permissions = b.permissions && typeof b.permissions === 'object' ? b.permissions : defaultPermissions(b.role);
   const { data: u, error } = await a.auth.admin.createUser({
     email: b.email,
     password: b.password,
@@ -57,7 +58,7 @@ export async function POST(req: Request) {
     role: b.role,
     clinic_id: b.role === 'clinic' ? b.clinic_id : null,
     active: true,
-    permissions: permissions || defaultPermissions(b.role),
+    permissions,
   }).eq('id', u.user.id);
 
   if (pe) return NextResponse.json({ error: pe.message }, { status: 400 });
