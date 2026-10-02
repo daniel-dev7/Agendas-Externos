@@ -17,7 +17,7 @@ function defaultPermissions(role: string) {
     patients: true, clinics: role !== 'clinic', users: false,
     agenda_create: role !== 'operator', agenda_edit: role !== 'operator', agenda_delete: role === 'admin',
     appointment_book: true, appointment_cancel: true, appointment_status: true,
-    appointment_reschedule: false, patient_create: role !== 'clinic', clinic_manage: role !== 'clinic',
+    appointment_reschedule: false, patient_create: role !== 'clinic', clinic_manage: role === 'admin',
   };
   if (role === 'admin') return Object.fromEntries(Object.keys(base).map(k => [k, true]));
   return base;
