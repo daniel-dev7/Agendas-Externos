@@ -16,11 +16,9 @@ export default function Shell({ children, profile }: { children: React.ReactNode
     ['/agendas', 'Agendas', CalendarDays],
     ['/agendas/mapa', 'Mapa de disponibilidade', MapPinned],
     ['/pacientes', 'Pacientes', ContactRound],
-    ['/clinicas', 'Clínicas', Building2],
+    ...(profile.role !== 'clinic' ? [['/clinicas', 'Clínicas', Building2] as const] : []),
   ] as const;
 
-  // Pré-carrega as telas principais assim que o menu é exibido.
-  // Isso reduz a espera perceptível ao alternar entre as áreas do sistema.
   useEffect(() => {
     const timer = window.setTimeout(() => {
       mainRoutes.forEach((href) => router.prefetch(href));
@@ -28,9 +26,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
     return () => window.clearTimeout(timer);
   }, [router]);
 
-  const prefetch = (href: string) => {
-    router.prefetch(href);
-  };
+  const prefetch = (href: string) => router.prefetch(href);
 
   return (
     <div className="shell">
@@ -68,13 +64,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
           {profile.role === 'admin' && (
             <>
               <div className="navLabel navLabelSpaced">Administração</div>
-              <Link
-                className={path.startsWith('/usuarios') ? 'nav active' : 'nav'}
-                href="/usuarios"
-                prefetch
-                onMouseEnter={() => prefetch('/usuarios')}
-                onFocus={() => prefetch('/usuarios')}
-              >
+              <Link className={path.startsWith('/usuarios') ? 'nav active' : 'nav'} href="/usuarios" prefetch onMouseEnter={() => prefetch('/usuarios')} onFocus={() => prefetch('/usuarios')}>
                 <UsersRound size={18} />Usuários
               </Link>
             </>
