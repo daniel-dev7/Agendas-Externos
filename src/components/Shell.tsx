@@ -27,6 +27,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
   }, [router]);
 
   const prefetch = (href: string) => router.prefetch(href);
+  const isActive = (href: string) => href === '/agendas' ? path === '/agendas' : path.startsWith(href);
 
   return (
     <div className="shell">
@@ -50,14 +51,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
         <aside>
           <div className="navLabel">Navegação</div>
           {items.map(([href, label, Icon]) => (
-            <Link
-              className={path.startsWith(href) ? 'nav active' : 'nav'}
-              href={href}
-              key={href}
-              prefetch
-              onMouseEnter={() => prefetch(href)}
-              onFocus={() => prefetch(href)}
-            >
+            <Link className={isActive(href) ? 'nav active' : 'nav'} href={href} key={href} prefetch onMouseEnter={() => prefetch(href)} onFocus={() => prefetch(href)}>
               <Icon size={18} />{label}
             </Link>
           ))}
