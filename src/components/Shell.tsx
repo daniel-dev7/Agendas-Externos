@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { CalendarDays, Building2, LayoutDashboard, LogOut, UsersRound, MapPinned, ContactRound } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
 
-const mainRoutes = ['/dashboard', '/agendas', '/agendas/mapa', '/pacientes', '/clinicas', '/usuarios'];
+const mainRoutes = ['/dashboard', '/admin/dashboard', '/agendas', '/agendas/mapa', '/pacientes', '/clinicas', '/usuarios'];
 
 export default function Shell({ children, profile }: { children: React.ReactNode; profile: any }) {
   const path = usePathname();
@@ -58,6 +58,9 @@ export default function Shell({ children, profile }: { children: React.ReactNode
           {profile.role === 'admin' && (
             <>
               <div className="navLabel navLabelSpaced">Administração</div>
+              <Link className={path.startsWith('/admin/dashboard') ? 'nav active' : 'nav'} href="/admin/dashboard" prefetch onMouseEnter={() => prefetch('/admin/dashboard')} onFocus={() => prefetch('/admin/dashboard')}>
+                <LayoutDashboard size={18} />Dashboard
+              </Link>
               <Link className={path.startsWith('/usuarios') ? 'nav active' : 'nav'} href="/usuarios" prefetch onMouseEnter={() => prefetch('/usuarios')} onFocus={() => prefetch('/usuarios')}>
                 <UsersRound size={18} />Usuários
               </Link>
