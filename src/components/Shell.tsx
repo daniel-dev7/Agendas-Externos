@@ -8,15 +8,17 @@ import { createClient } from '@/lib/supabase-browser';
 
 const mainRoutes = ['/dashboard', '/admin/dashboard', '/agendas', '/agendas/mapa', '/pacientes', '/clinicas', '/usuarios'];
 
+function can(profile: any, key: string) { return profile.role === 'admin' || profile.permissions?.[key] !== false; }
+
 export default function Shell({ children, profile }: { children: React.ReactNode; profile: any }) {
   const path = usePathname();
   const router = useRouter();
   const items = [
-    ['/dashboard', 'Visão geral', LayoutDashboard],
-    ['/agendas', 'Agendas', CalendarDays],
-    ['/agendas/mapa', 'Mapa de disponibilidade', MapPinned],
-    ['/pacientes', 'Pacientes', ContactRound],
-    ...(profile.role !== 'clinic' ? [['/clinicas', 'Clínicas', Building2] as const] : []),
+    ...(can(profile, 'overview') ? [['/dashboard', 'Visão geral', LayoutDashboard] as const] : []),
+    ...(can(profile, 'agendas') ? [['/agendas', 'Agendas', CalendarDays] as const] : []),
+    ...(can(profile, 'availability_map') ? [['/agendas/mapa', 'Mapa de disponibilidade', MapPinned] as const] : []),
+    ...(can(profile, 'patients') ? [['/pacientes', 'Pacientes', ContactRound] as const] : []),
+    ...(profile.role !== 'clinic' && can(profile, 'clinics') ? [['/clinicas', 'Clínicas', Building2] as const] : []),
   ] as const;
 
   useEffect(() => {
@@ -55,12 +57,12 @@ export default function Shell({ children, profile }: { children: React.ReactNode
               <Icon size={18} />{label}
             </Link>
           ))}
-          {profile.role === 'admin' && (
+          {profile.role === 'admin' && can(profile, 'users') && (
             <>
               <div className="navLabel navLabelSpaced">Administração</div>
-              <Link className={path.startsWith('/admin/dashboard') ? 'nav active' : 'nav'} href="/admin/dashboard" prefetch onMouseEnter={() => prefetch('/admin/dashboard')} onFocus={() => prefetch('/admin/dashboard')}>
+              {can(profile, 'dashboard') && <Link className={path.startsWith('/admin/dashboard') ? 'nav active' : 'nav'} href="/admin/dashboard" prefetch onMouseEnter={() => prefetch('/admin/dashboard')} onFocus={() => prefetch('/admin/dashboard')}>
                 <LayoutDashboard size={18} />Dashboard
-              </Link>
+              </Link>}
               <Link className={path.startsWith('/usuarios') ? 'nav active' : 'nav'} href="/usuarios" prefetch onMouseEnter={() => prefetch('/usuarios')} onFocus={() => prefetch('/usuarios')}>
                 <UsersRound size={18} />Usuários
               </Link>
