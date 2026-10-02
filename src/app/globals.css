@@ -92,3 +92,10 @@ aside{padding:24px 14px;background:#fbfcfe;border-right:1px solid #e4eaf2;displa
 .status-cancelled .slotState{color:#b42318}
 .status-attended .slotState{color:#075c3b}
 .status-no_show .slotState{color:#6b21a8}
+
+
+.cancelledSlotHistory{margin-top:10px;border-color:#f2b8b5;background:#fffafa}
+.cancelledState{color:#b42318!important}
+.cancelledSlotItem{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:8px 0;border-top:1px solid #f3d4d2;font-size:11px}
+.cancelledSlotItem strong{color:#7a271a}
+.cancelledSlotItem span{font-size:9px;color:#b42318;font-weight:700}
