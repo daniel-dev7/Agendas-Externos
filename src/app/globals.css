@@ -64,3 +64,21 @@ aside{padding:24px 14px;background:#fbfcfe;border-right:1px solid #e4eaf2;displa
   .agendaSlotCardBody{min-height:39px;padding:7px 8px}
   .agendaSlotCardPatient{font-size:10px}
 }
+
+
+/* status visual dos slots */
+.agendaSlotCard.status-reserved,.agendaSlotCard.status-confirmed{border-color:#a7e3bd;background:#f0fdf4}
+.agendaSlotCard.status-reserved .agendaSlotCardTime,.agendaSlotCard.status-confirmed .agendaSlotCardTime{background:#22a35a}
+.agendaSlotCard.status-reserved .agendaSlotCardPatient,.agendaSlotCard.status-confirmed .agendaSlotCardPatient{color:#166534;font-weight:800}
+.agendaSlotCard.status-cancelled{border-color:#f2b8b5;background:#fff5f5}
+.agendaSlotCard.status-cancelled .agendaSlotCardTime{background:#d92d20}
+.agendaSlotCard.status-cancelled .agendaSlotCardPatient{color:#b42318;font-weight:800}
+.agendaSlotCard.status-attended{border-color:#0b6b43;background:#ecfdf3}
+.agendaSlotCard.status-attended .agendaSlotCardTime{background:#075c3b}
+.agendaSlotCard.status-attended .agendaSlotCardPatient{color:#064e3b;font-weight:800}
+.agendaSlotCard.status-no_show{border-color:#d6bbf5;background:#faf5ff}
+.agendaSlotCard.status-no_show .agendaSlotCardTime{background:#7f3fbf}
+.agendaSlotCard.status-no_show .agendaSlotCardPatient{color:#6b21a8;font-weight:800}
+.agendaSlotCard.status-cancelled .agendaSlotCardStatus,
+.agendaSlotCard.status-attended .agendaSlotCardStatus,
+.agendaSlotCard.status-no_show .agendaSlotCardStatus{display:block;font-size:8px;font-weight:800;margin-top:2px}
