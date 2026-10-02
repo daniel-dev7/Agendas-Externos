@@ -225,3 +225,13 @@ aside{padding:24px 14px;background:#fbfcfe;border-right:1px solid #e4eaf2;displa
 .patientInput input[type=date]{color:#667085}
 .patientInput input[type=date]:valid{color:#101828}
 .patientFormGrid .btn{height:46px;border-radius:12px;box-shadow:0 5px 14px #155eef20;font-weight:800}
+
+.patientInput:has(input[type="date"]){position:relative}
+.patientInput input[type="date"]{appearance:none;-webkit-appearance:none;color:#667085;letter-spacing:.01em}
+.patientInput input[type="date"]::-webkit-datetime-edit{padding:0}
+.patientInput input[type="date"]::-webkit-datetime-edit-text{color:#98a2b3;padding:0 2px}
+.patientInput input[type="date"]::-webkit-datetime-edit-month-field,
+.patientInput input[type="date"]::-webkit-datetime-edit-day-field,
+.patientInput input[type="date"]::-webkit-datetime-edit-year-field{color:#667085}
+.patientInput input[type="date"]::-webkit-calendar-picker-indicator{opacity:.55;width:15px;height:15px;cursor:pointer;margin:0 0 0 5px}
+.patientInput input[type="date"]:focus::-webkit-calendar-picker-indicator{opacity:.9}
