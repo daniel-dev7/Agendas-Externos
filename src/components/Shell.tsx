@@ -2,8 +2,11 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { CalendarDays, Building2, LayoutDashboard, LogOut, UsersRound, MapPinned, ContactRound } from 'lucide-react';
 import { createClient } from '@/lib/supabase-browser';
+
+const mainRoutes = ['/dashboard', '/agendas', '/agendas/mapa', '/pacientes', '/clinicas', '/usuarios'];
 
 export default function Shell({ children, profile }: { children: React.ReactNode; profile: any }) {
   const path = usePathname();
@@ -16,10 +19,23 @@ export default function Shell({ children, profile }: { children: React.ReactNode
     ['/clinicas', 'Clínicas', Building2],
   ] as const;
 
+  // Pré-carrega as telas principais assim que o menu é exibido.
+  // Isso reduz a espera perceptível ao alternar entre as áreas do sistema.
+  useEffect(() => {
+    const timer = window.setTimeout(() => {
+      mainRoutes.forEach((href) => router.prefetch(href));
+    }, 60);
+    return () => window.clearTimeout(timer);
+  }, [router]);
+
+  const prefetch = (href: string) => {
+    router.prefetch(href);
+  };
+
   return (
     <div className="shell">
       <header className="topbar">
-        <Link href="/dashboard" className="brand">
+        <Link href="/dashboard" className="brand" prefetch onMouseEnter={() => prefetch('/dashboard')} onFocus={() => prefetch('/dashboard')}>
           <span className="brandIcon"><CalendarDays size={18} /></span>
           <div><b>Agenda Clínica</b><small>Gestão de agendas</small></div>
         </Link>
@@ -38,14 +54,27 @@ export default function Shell({ children, profile }: { children: React.ReactNode
         <aside>
           <div className="navLabel">Navegação</div>
           {items.map(([href, label, Icon]) => (
-            <Link className={path.startsWith(href) ? 'nav active' : 'nav'} href={href} key={href}>
+            <Link
+              className={path.startsWith(href) ? 'nav active' : 'nav'}
+              href={href}
+              key={href}
+              prefetch
+              onMouseEnter={() => prefetch(href)}
+              onFocus={() => prefetch(href)}
+            >
               <Icon size={18} />{label}
             </Link>
           ))}
           {profile.role === 'admin' && (
             <>
               <div className="navLabel navLabelSpaced">Administração</div>
-              <Link className={path.startsWith('/usuarios') ? 'nav active' : 'nav'} href="/usuarios">
+              <Link
+                className={path.startsWith('/usuarios') ? 'nav active' : 'nav'}
+                href="/usuarios"
+                prefetch
+                onMouseEnter={() => prefetch('/usuarios')}
+                onFocus={() => prefetch('/usuarios')}
+              >
                 <UsersRound size={18} />Usuários
               </Link>
             </>
