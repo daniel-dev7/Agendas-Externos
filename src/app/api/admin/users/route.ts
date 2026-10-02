@@ -11,6 +11,18 @@ async function requireAdmin() {
   return profile?.role === 'admin' && profile.active ? { id } : null;
 }
 
+function defaultPermissions(role: string) {
+  const base = {
+    overview: true, dashboard: false, agendas: true, availability_map: true,
+    patients: true, clinics: role !== 'clinic', users: false,
+    agenda_create: role !== 'operator', agenda_edit: role !== 'operator', agenda_delete: role === 'admin',
+    appointment_book: true, appointment_cancel: true, appointment_status: true,
+    appointment_reschedule: false, patient_create: role !== 'clinic', clinic_manage: role !== 'clinic',
+  };
+  if (role === 'admin') return Object.fromEntries(Object.keys(base).map(k => [k, true]));
+  return base;
+}
+
 function getAdminClient() {
   return adminClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -45,6 +57,7 @@ export async function POST(req: Request) {
     role: b.role,
     clinic_id: b.role === 'clinic' ? b.clinic_id : null,
     active: true,
+    permissions: permissions || defaultPermissions(b.role),
   }).eq('id', u.user.id);
 
   if (pe) return NextResponse.json({ error: pe.message }, { status: 400 });
@@ -60,6 +73,7 @@ export async function PATCH(req: Request) {
   const role = String(b.role ?? '');
   const clinic_id = b.clinic_id ? String(b.clinic_id) : null;
   const active = Boolean(b.active);
+  const permissions = b.permissions && typeof b.permissions === 'object' ? b.permissions : null;
 
   if (!id || !['admin', 'operator', 'clinic'].includes(role)) {
     return NextResponse.json({ error: 'Dados inválidos.' }, { status: 400 });
@@ -73,6 +87,7 @@ export async function PATCH(req: Request) {
     role,
     clinic_id: role === 'clinic' ? clinic_id : null,
     active,
+    ...(permissions ? { permissions } : {}),
   }).eq('id', id);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 400 });
