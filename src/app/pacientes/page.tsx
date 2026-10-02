@@ -32,7 +32,7 @@ export default function Patients() {
     const s=createClient();
     const {data:{user}}=await s.auth.getUser();
     if(!user)return;
-    const {data:p}=await s.from('profiles').select('id,full_name,role,clinic_id').eq('id',user.id).single();
+    const {data:p}=await s.from('profiles').select('id,full_name,role,clinic_id,permissions').eq('id',user.id).single();
     setProfile(p);
     const {data}=await s.from('patients').select('id,full_name,phone,birth_date,cpf,created_at').order('full_name');
     setRows(data||[]);
@@ -54,7 +54,8 @@ export default function Patients() {
   }
 
   if(!profile)return <div className="loading">Carregando...</div>;
-  const canCreate=profile.role==='admin'||profile.role==='operator';
+  const allowed=(key:string)=>profile.role==='admin'||profile.permissions?.[key]!==false;
+  const canCreate=(profile.role==='admin'||profile.role==='operator')&&allowed('patient_create');
   const filtered=rows.filter(r=>{
     const q=search.toLowerCase().trim();
     const digits=onlyDigits(q); return !q || r.full_name.toLowerCase().includes(q) || (digits.length>0 && r.cpf.includes(digits));
