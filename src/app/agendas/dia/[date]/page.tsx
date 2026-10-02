@@ -8,7 +8,7 @@ import Shell from '@/components/Shell';
 import { createClient } from '@/lib/supabase-browser';
 
 const statusLabel: Record<string, string> = {
-  reserved: 'Reservado', confirmed: 'Confirmado', attended: 'Atendido', cancelled: 'Cancelado', no_show: 'Não compareceu',
+  reserved: 'Reservado', confirmed: 'Confirmado', attended: 'Atendido', cancelled: 'Cancelado', no_show: 'Faltou',
 };
 
 function slotTime(slotNumber: number) {
@@ -45,7 +45,7 @@ export default function DayAgendas() {
     const ids = (agendaRows || []).map(a => a.id);
     setAgendas(agendaRows || []);
     if (!ids.length) { setAppointments([]); setLoading(false); return; }
-    const { data: appointmentRows } = await s.from('appointments').select('id,agenda_id,patient_name,slot_number,slot_time,status').in('agenda_id', ids).neq('status', 'cancelled').order('slot_time', { ascending: true });
+    const { data: appointmentRows } = await s.from('appointments').select('id,agenda_id,patient_name,slot_number,slot_time,status').in('agenda_id', ids).order('slot_time', { ascending: true });
     setAppointments(appointmentRows || []);
     setLoading(false);
   }
@@ -83,11 +83,12 @@ export default function DayAgendas() {
         <div className="dayEmpty card"><CalendarDays size={26} /><strong>Nenhuma agenda aberta neste dia</strong><span>Crie ou abra uma agenda para que ela apareça nesta visão.</span></div>
       ) : (
         <div className="dayBoardShell">
-          <div className="dayBoardMeta"><strong>{agendas.length} {agendas.length === 1 ? 'agenda aberta' : 'agendas abertas'}</strong><span>{appointments.length} {appointments.length === 1 ? 'agendamento' : 'agendamentos'}</span></div>
+          <div className="dayBoardMeta"><strong>{agendas.length} {agendas.length === 1 ? 'agenda aberta' : 'agendas abertas'}</strong><span>{appointments.filter(x => x.status !== 'cancelled').length} {appointments.filter(x => x.status !== 'cancelled').length === 1 ? 'agendamento' : 'agendamentos'}</span></div>
           <div className="dayBoard">
             {agendas.map((agenda) => {
               const items = appointmentsByAgenda[agenda.id] || [];
-              const used = items.length;
+              const activeItems = items.filter(x => x.status !== 'cancelled');
+              const used = activeItems.length;
               const percent = Math.min(100, Math.round((used / agenda.capacity) * 100));
               return (
                 <section className="agendaColumn" key={agenda.id}>
@@ -102,12 +103,13 @@ export default function DayAgendas() {
                       const slotNumber = index + 1;
                       const item = items.find(x => Number(x.slot_number) === slotNumber);
                       const time = slotTime(slotNumber);
+                      const stateClass = item ? ' status-' + item.status : ' available';
                       return (
                         <Link
                           href={'/agendas/' + agenda.id + '/slot/' + slotNumber}
-                          className={'agendaSlotCard ' + (item ? 'occupied' : 'available')}
+                          className={'agendaSlotCard' + stateClass}
                           key={slotNumber}
-                          aria-label={item ? `${time} — ${item.patient_name}` : `${time} — slot vazio, agendar paciente`}
+                          aria-label={item ? `${time} — ${item.patient_name} — ${statusLabel[item.status] || item.status}` : `${time} — slot vazio, agendar paciente`}
                         >
                           <span className="agendaSlotCardTime">{time}</span>
                           <span className="agendaSlotCardBody">
