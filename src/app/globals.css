@@ -215,3 +215,13 @@ aside{padding:24px 14px;background:#fbfcfe;border-right:1px solid #e4eaf2;displa
 @media(max-width:1100px){.analyticsKpiGrid{grid-template-columns:repeat(3,1fr)}}
 @media(max-width:800px){.dashboardAnalyticsDark{margin:-18px -14px -30px;padding:16px 12px 28px}.analyticsTop{align-items:flex-start;flex-direction:column}.analyticsChartColumns{grid-template-columns:1fr}.donutLayout{min-height:150px}.analyticsBarChart{overflow-x:auto}.analyticsBarItem{min-width:38px}.analyticsKpiGrid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:520px){.analyticsKpiGrid{grid-template-columns:1fr 1fr;gap:6px}.analyticsKpiGrid>div{padding:10px;min-height:76px}.analyticsKpiGrid strong{font-size:19px}.donutLayout{gap:12px}.donutChart{width:130px;height:130px;flex-basis:130px}.clinicDonut{width:125px;height:125px;flex-basis:125px}.donutChart:after{inset:25px}.analyticsChartWide,.analyticsChartCard{padding:13px}.clinicTableRow{grid-template-columns:1.3fr .7fr .7fr;gap:7px}.clinicTableRow span:nth-of-type(2),.clinicTableRow span:nth-of-type(3){display:none}}
+
+.patientFormGrid label>span{font-size:10px;text-transform:uppercase;letter-spacing:.045em;color:#667085;font-weight:800}
+.patientInput{height:46px;display:flex;align-items:center;gap:9px;background:#f8fafc;border:1px solid #d9e2ef;border-radius:12px;padding:0 12px;color:#98a2b3;transition:border-color .18s ease,box-shadow .18s ease,background .18s ease,transform .18s ease}
+.patientInput:hover{border-color:#b9c8dc;background:#fff}
+.patientInput:focus-within{background:#fff;border-color:#155eef;box-shadow:0 0 0 4px #155eef12,0 4px 12px #1018280a;transform:translateY(-1px);color:#155eef}
+.patientInput input{height:100%;width:100%;min-width:0;border:0!important;outline:0!important;background:transparent!important;box-shadow:none!important;padding:0!important;color:#101828;font-size:12px;font-weight:500}
+.patientInput input::placeholder{color:#a5afbf;font-weight:400}
+.patientInput input[type=date]{color:#667085}
+.patientInput input[type=date]:valid{color:#101828}
+.patientFormGrid .btn{height:46px;border-radius:12px;box-shadow:0 5px 14px #155eef20;font-weight:800}
