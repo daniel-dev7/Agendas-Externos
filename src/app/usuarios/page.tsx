@@ -12,7 +12,7 @@ export default async function Users() {
 
   const s = await createClient();
   const [{ data: users }, { data: clinics }] = await Promise.all([
-    s.from('profiles').select('id,full_name,role,active,clinic_id').order('full_name'),
+    s.from('profiles').select('id,full_name,role,active,clinic_id,permissions').order('full_name'),
     s.from('clinics').select('id,name').eq('active', true).order('name'),
   ]);
 
