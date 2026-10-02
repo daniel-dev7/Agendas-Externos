@@ -36,7 +36,7 @@ export default function Shell({ children, profile }: { children: React.ReactNode
       mainRoutes.forEach((href) => router.prefetch(href));
     }, 60);
     return () => window.clearTimeout(timer);
-  }, [router]);
+  }, [router, path, profile]);
 
   const prefetch = (href: string) => router.prefetch(href);
   const isActive = (href: string) => href === '/agendas' ? path === '/agendas' : path.startsWith(href);
