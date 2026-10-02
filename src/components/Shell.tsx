@@ -22,6 +22,16 @@ export default function Shell({ children, profile }: { children: React.ReactNode
   ] as const;
 
   useEffect(() => {
+    const required = path.startsWith('/admin/dashboard') ? 'dashboard'
+      : path.startsWith('/agendas/mapa') ? 'availability_map'
+      : path.startsWith('/agendas') ? 'agendas'
+      : path.startsWith('/pacientes') ? 'patients'
+      : path.startsWith('/clinicas') ? 'clinics'
+      : path.startsWith('/usuarios') ? 'users'
+      : path === '/dashboard' ? 'overview'
+      : null;
+    if (required && !can(profile, required)) router.replace('/dashboard');
+
     const timer = window.setTimeout(() => {
       mainRoutes.forEach((href) => router.prefetch(href));
     }, 60);
