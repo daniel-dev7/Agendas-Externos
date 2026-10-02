@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useRef, useState } from 'react';
-import { ArrowLeft, CalendarDays, CheckCircle2, ChevronDown, Search, UserRound, X, XCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, ChevronDown, Search, UserRound, X, XCircle, CircleCheckBig } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import Shell from '@/components/Shell';
@@ -23,6 +23,9 @@ function formatPhone(phone: string) {
   if (digits.length === 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
   return phone || '';
 }
+const statusLabel: Record<string, string> = {
+  reserved: 'Reservado', confirmed: 'Confirmado', attended: 'Atendido', cancelled: 'Cancelado', no_show: 'Faltou',
+};
 
 export default function SlotPage() {
   const { id, slot } = useParams();
@@ -40,6 +43,7 @@ export default function SlotPage() {
   const [open, setOpen] = useState(false);
   const [patientId, setPatientId] = useState('');
   const [msg, setMsg] = useState('');
+  const [savingStatus, setSavingStatus] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
   const patientInputRef = useRef<HTMLInputElement>(null);
 
@@ -50,7 +54,7 @@ export default function SlotPage() {
     const [{ data: p }, { data: a }, { data: ap }, { data: pt }] = await Promise.all([
       s.from('profiles').select('*,clinics(id,name)').eq('id', user.id).single(),
       s.from('agendas').select('id,scheduled_date,status,capacity,clinics(id,name)').eq('id', agendaId).single(),
-      s.from('appointments').select('id,patient_id,patient_name,slot_time,status').eq('agenda_id', agendaId).eq('slot_number', slotNumber).neq('status', 'cancelled').maybeSingle(),
+      s.from('appointments').select('id,patient_id,patient_name,slot_time,status').eq('agenda_id', agendaId).eq('slot_number', slotNumber).maybeSingle(),
       s.from('patients').select('id,full_name,cpf,phone').order('full_name')
     ]);
     setProfile(p); setAgenda(a); setAppointment(ap || null); setPatients(pt || []);
@@ -89,28 +93,35 @@ export default function SlotPage() {
     const patient = patients.find(p => p.id === patientId);
     if (!patient) return setMsg('Paciente não encontrado.');
     const { error } = await createClient().from('appointments').insert({
-      agenda_id: agendaId,
-      patient_id: patient.id,
-      patient_name: patient.full_name,
-      slot_number: slotNumber,
-      slot_time: slotTime,
-      status: 'reserved'
+      agenda_id: agendaId, patient_id: patient.id, patient_name: patient.full_name,
+      slot_number: slotNumber, slot_time: slotTime, status: 'reserved'
     });
     if (error) setMsg(error.code === '23505' ? 'Este slot acabou de ser ocupado. Atualize a página.' : error.message);
     else load();
   }
 
   async function cancel() {
-    if (!appointment) return;
+    if (!appointment || !['reserved', 'confirmed'].includes(appointment.status)) return;
     setMsg('');
     const { error } = await createClient().from('appointments').update({ status: 'cancelled' }).eq('id', appointment.id);
+    if (error) setMsg(error.message); else load();
+  }
+
+  async function setStatus(status: 'attended' | 'no_show') {
+    if (!appointment || !['reserved', 'confirmed'].includes(appointment.status)) return;
+    setSavingStatus(true);
+    setMsg('');
+    const { error } = await createClient().from('appointments').update({ status }).eq('id', appointment.id);
+    setSavingStatus(false);
     if (error) setMsg(error.message); else load();
   }
 
   if (!profile || !agenda) return <div className="loading">Carregando slot...</div>;
 
   const canBook = ['admin', 'operator', 'clinic'].includes(profile.role);
+  const canSetAttendance = ['admin', 'operator', 'clinic'].includes(profile.role);
   const formattedDate = new Date(agenda.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
+  const isOpenAppointment = appointment && ['reserved', 'confirmed'].includes(appointment.status);
 
   return <Shell profile={profile}>
     <div className="compactSlotHeader">
@@ -118,11 +129,17 @@ export default function SlotPage() {
       <div><strong>{agenda.clinics?.name || 'Clínica'}</strong><span>{formattedDate} · Slot {String(slotNumber).padStart(2, '0')} · {slotTime}</span></div>
     </div>
 
-    {appointment ? <div className="slotOccupied card">
-      <div className="slotState success"><CheckCircle2 size={18}/><span>Slot ocupado</span></div>
+    {appointment ? <div className={'slotOccupied card slotStatusCard status-' + appointment.status}>
+      <div className="slotState success"><CheckCircle2 size={18}/><span>Agendamento · {statusLabel[appointment.status] || appointment.status}</span></div>
       <h2>{appointment.patient_name}</h2>
-      <p className="muted">Horário: {slotTime} · Status: {appointment.status === 'confirmed' ? 'Confirmado' : 'Reservado'}</p>
-      {canBook && <button className="btn slotCancel" onClick={cancel}><XCircle size={15}/> Cancelar agendamento</button>}
+      <p className="muted">Horário: {slotTime} · Status: {statusLabel[appointment.status] || appointment.status}</p>
+
+      {canSetAttendance && isOpenAppointment && <div className="appointmentStatusActions">
+        <button className="statusBtn attendedBtn" onClick={() => setStatus('attended')} disabled={savingStatus}><CircleCheckBig size={15}/> Atendido</button>
+        <button className="statusBtn noShowBtn" onClick={() => setStatus('no_show')} disabled={savingStatus}><UserRound size={15}/> Faltou</button>
+      </div>}
+
+      {canBook && isOpenAppointment && <button className="btn slotCancel" onClick={cancel}><XCircle size={15}/> Cancelar agendamento</button>}
       {msg && <div className="error">{msg}</div>}
     </div> : canBook ? <div className="card slotBookingCard">
       <div className="slotBookingLine"><div className="slotState"><UserRound size={16}/><span>Disponível · {slotTime}</span></div></div>
