@@ -40,7 +40,7 @@ export default function SlotPage() {
     const { data: { user } } = await s.auth.getUser();
     if (!user) return;
     const [{ data: p }, { data: a }, { data: rows }, { data: allRows }, { data: pt }] = await Promise.all([
-      s.from('profiles').select('*,clinics(id,name)').eq('id', user.id).single(),
+      s.from('profiles').select('*,clinics(id,name),permissions').eq('id', user.id).single(),
       s.from('agendas').select('id,scheduled_date,status,capacity,clinics(id,name)').eq('id', agendaId).single(),
       s.from('appointments').select('id,patient_id,patient_name,slot_time,status,created_at').eq('agenda_id', agendaId).eq('slot_number', slotNumber).order('created_at', { ascending: false }),
       s.from('appointments').select('id,slot_number,slot_time,status').eq('agenda_id', agendaId),
@@ -104,9 +104,11 @@ export default function SlotPage() {
   }
 
   if (!profile || !agenda) return <div className="loading">Carregando slot...</div>;
-  const canBook = ['admin', 'operator', 'clinic'].includes(profile.role);
-  const canSetAttendance = ['admin', 'operator', 'clinic'].includes(profile.role);
-  const canReschedule = profile.role === 'admin';
+  const allowed = (key: string) => profile.role === 'admin' || profile.permissions?.[key] !== false;
+  const canBook = ['admin', 'operator', 'clinic'].includes(profile.role) && allowed('appointment_book');
+  const canCancel = ['admin', 'operator', 'clinic'].includes(profile.role) && allowed('appointment_cancel');
+  const canSetAttendance = ['admin', 'operator', 'clinic'].includes(profile.role) && allowed('appointment_status');
+  const canReschedule = profile.role === 'admin' && allowed('appointment_reschedule');
   const formattedDate = new Date(agenda.scheduled_date + 'T12:00:00').toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' });
   const isOpenAppointment = appointment && ['reserved', 'confirmed'].includes(appointment.status);
 
@@ -125,7 +127,7 @@ export default function SlotPage() {
         </div>
         <button type="button" className="rescheduleCancel" onClick={() => setRescheduling(false)}>Cancelar</button>
       </div>}
-      {canBook && isOpenAppointment && <button className="btn slotCancel" onClick={cancel}> <XCircle size={15}/> Cancelar agendamento</button>}
+      {canCancel && isOpenAppointment && <button className="btn slotCancel" onClick={cancel}> <XCircle size={15}/> Cancelar agendamento</button>}
       {msg && <div className="error">{msg}</div>}
     </div>}
 
