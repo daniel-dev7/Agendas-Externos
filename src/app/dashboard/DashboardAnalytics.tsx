@@ -48,7 +48,7 @@ export default function DashboardAnalytics({profile}:Props){
       <div className="analyticsMetric"><span><UsersRound size={17}/></span><small>Agendamentos ativos</small><strong>{stats.active}</strong><em>{stats.occupancy}% da capacidade</em></div>
       <div className="analyticsMetric"><span><CheckCircle2 size={17}/></span><small>Atendidos</small><strong>{stats.attended}</strong></div>
       <div className="analyticsMetric"><span><Clock3 size={17}/></span><small>Agendados</small><strong>{stats.booked}</strong></div>
-      <div className="analyticsMetric"><span><UsersRound size={17}/span><small>Faltas</small><strong>{stats.noShow}</strong></div>
+      <div className="analyticsMetric"><span><UsersRound size={17}/></span><small>Faltas</small><strong>{stats.noShow}</strong></div>
       <div className="analyticsMetric"><span><XCircle size={17}/></span><small>Cancelamentos</small><strong>{stats.cancelled}</strong></div>
     </section>
     <div className="analyticsColumns">
