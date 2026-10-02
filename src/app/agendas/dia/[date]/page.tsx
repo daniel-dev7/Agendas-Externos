@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { CalendarDays, ChevronLeft, ChevronRight, CircleCheck, UserRound } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, CircleCheck, UserRound, XCircle } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import Shell from '@/components/Shell';
@@ -45,7 +45,7 @@ export default function DayAgendas() {
     const ids = (agendaRows || []).map(a => a.id);
     setAgendas(agendaRows || []);
     if (!ids.length) { setAppointments([]); setLoading(false); return; }
-    const { data: appointmentRows } = await s.from('appointments').select('id,agenda_id,patient_name,slot_number,slot_time,status').in('agenda_id', ids).order('slot_time', { ascending: true });
+    const { data: appointmentRows } = await s.from('appointments').select('id,agenda_id,patient_name,slot_number,slot_time,status,created_at').in('agenda_id', ids).order('created_at', { ascending: false });
     setAppointments(appointmentRows || []);
     setLoading(false);
   }
@@ -101,22 +101,30 @@ export default function DayAgendas() {
                   <div className="agendaSlots">
                     {Array.from({ length: agenda.capacity }, (_, index) => {
                       const slotNumber = index + 1;
-                      const item = items.find(x => Number(x.slot_number) === slotNumber);
+                      const slotItems = items.filter(x => Number(x.slot_number) === slotNumber);
+                      const activeItem = slotItems.find(x => x.status !== 'cancelled');
+                      const cancelledItem = slotItems.find(x => x.status === 'cancelled');
+                      const item = activeItem || cancelledItem;
                       const time = slotTime(slotNumber);
                       const stateClass = item ? ' status-' + item.status : ' available';
+                      const label = activeItem
+                        ? `${time} — ${activeItem.patient_name} — ${statusLabel[activeItem.status] || activeItem.status}`
+                        : cancelledItem
+                          ? `${time} — ${cancelledItem.patient_name} — cancelado; clique para encaixar outro paciente`
+                          : `${time} — slot vazio, agendar paciente`;
                       return (
                         <Link
                           href={'/agendas/' + agenda.id + '/slot/' + slotNumber}
                           className={'agendaSlotCard' + stateClass}
                           key={slotNumber}
-                          aria-label={item ? `${time} — ${item.patient_name} — ${statusLabel[item.status] || item.status}` : `${time} — slot vazio, agendar paciente`}
+                          aria-label={label}
                         >
                           <span className="agendaSlotCardTime">{time}</span>
                           <span className="agendaSlotCardBody">
                             <span className="agendaSlotCardPatient">{item?.patient_name || 'Sem paciente'}</span>
                             <span className="agendaSlotCardStatus">{item ? (statusLabel[item.status] || item.status) : 'Clique para agendar'}</span>
                           </span>
-                          <span className="agendaSlotCardIcon">{item ? <CircleCheck size={13}/> : <UserRound size={13}/>}</span>
+                          <span className="agendaSlotCardIcon">{item?.status === 'cancelled' ? <XCircle size={13}/> : item ? <CircleCheck size={13}/> : <UserRound size={13}/>}</span>
                         </Link>
                       );
                     })}
