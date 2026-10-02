@@ -82,3 +82,13 @@ aside{padding:24px 14px;background:#fbfcfe;border-right:1px solid #e4eaf2;displa
 .agendaSlotCard.status-cancelled .agendaSlotCardStatus,
 .agendaSlotCard.status-attended .agendaSlotCardStatus,
 .agendaSlotCard.status-no_show .agendaSlotCardStatus{display:block;font-size:8px;font-weight:800;margin-top:2px}
+
+
+.appointmentStatusActions{display:flex;gap:7px;margin:10px 0 8px;flex-wrap:wrap}
+.statusBtn{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:34px;padding:0 11px;border:1px solid;border-radius:8px;background:#fff;font-size:10px;font-weight:800;cursor:pointer}
+.statusBtn:disabled{opacity:.55;cursor:wait}
+.attendedBtn{color:#075c3b;border-color:#8fd2b2;background:#ecfdf3}
+.noShowBtn{color:#6b21a8;border-color:#d5b5ef;background:#faf5ff}
+.status-cancelled .slotState{color:#b42318}
+.status-attended .slotState{color:#075c3b}
+.status-no_show .slotState{color:#6b21a8}
